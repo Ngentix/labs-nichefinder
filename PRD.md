@@ -1,48 +1,143 @@
 # NicheFinder: Product Requirements Document
 
-**Version:** 1.0 (Draft)  
-**Date:** 2025-12-11  
-**Status:** Planning / Refinement  
+**Version:** 2.0
+**Date:** 2025-12-11
+**Status:** Active Development
 **Owner:** JG
 
 ---
 
 ## Executive Summary
 
-**NicheFinder** is a comprehensive demonstration project that proves the end-to-end capabilities of the UDM + PEG + Connector ecosystem by solving a real business problem: identifying underserved local business niches.
+**NicheFinder** is a multi-domain market intelligence platform that demonstrates the end-to-end capabilities of the UDM + PEG + Connector ecosystem by systematically analyzing integration ecosystems to identify high-value opportunities using real-time API data.
+
+**Primary Use Case:** Home Assistant Integration Opportunity Finder
+**Architecture:** Extensible multi-niche framework supporting future domains
 
 ### Primary Goals
 
-1. **Prove Connector Generation**: Demonstrate auto-generation of PEG-Connector v2 configurations from real-world APIs
-2. **Prove UDM Normalization**: Show data unification across heterogeneous sources (Yelp, Google Maps)
+1. **Prove Connector Generation**: Demonstrate auto-generation of PEG-Connector v2 configurations from real-world APIs (GitHub, Reddit, HACS)
+2. **Prove UDM Normalization**: Show data unification across heterogeneous sources into canonical schemas
 3. **Prove PEG Orchestration**: Demonstrate workflow automation using built-in PEG executor
-4. **Deliver Business Value**: Create a potentially profitable tool that identifies market opportunities
+4. **Deliver Business Value**: Create actionable market intelligence that complements AI-based research
+5. **Demonstrate Extensibility**: Build multi-niche architecture that can analyze any integration ecosystem
 
 ---
 
 ## Problem Statement
 
-**Business Problem:**  
-Entrepreneurs and local business owners struggle to identify underserved niches in their local markets.
+### Business Problem
 
-**Technical Problem:**  
+**For Integration Developers:**
+Identifying high-value integration opportunities requires manual research across fragmented data sources (GitHub issues, community forums, Reddit discussions, existing integrations). This process is time-consuming, inconsistent, and often misses emerging opportunities.
+
+**For Market Intelligence:**
+AI tools like ChatGPT provide qualitative insights but lack:
+- Real-time, current data (training cutoff limitations)
+- Verifiable sources and quantitative metrics
+- Systematic, repeatable analysis
+- Automated monitoring and trend tracking
+- Multi-source data fusion
+
+### Technical Problem
+
 We need to prove that the UDM + PEG + Connector ecosystem can:
 - Auto-generate connectors from any API without manual coding
-- Normalize data from multiple sources into a unified model
+- Normalize data from multiple heterogeneous sources into unified models
 - Orchestrate complex multi-step workflows reliably
-- Deliver actionable business intelligence
+- Deliver quantitative, verifiable, real-time market intelligence
+- Provide structured data that complements AI analysis
 
 ---
 
 ## Solution Overview
 
-NicheFinder analyzes any US city to identify the top 20 underserved business niches by:
+### Primary Use Case: Home Assistant Integration Opportunities
 
-1. **Data Collection**: Fetch business data from Yelp and Google Maps via auto-generated connectors
-2. **Normalization**: Use UDM to unify data into canonical Business entities
-3. **Analysis**: Calculate demand (search volume) vs supply (business count) ratios
-4. **Scoring**: Rank niches by opportunity score
-5. **Output**: Generate actionable report with revenue estimates
+NicheFinder analyzes the Home Assistant ecosystem to identify the top integration opportunities by:
+
+1. **Data Collection**: Fetch real-time data via auto-generated connectors:
+   - GitHub API: Integration requests, issues, repository metrics
+   - Reddit API: Community discussions, feature requests
+   - HACS API: Existing custom integrations, download counts
+   - Home Assistant Community Forum: Pain points, discussions
+
+2. **Normalization**: Use UDM to unify heterogeneous data into canonical `IntegrationOpportunity` schema
+
+3. **Analysis**: Calculate opportunity scores based on:
+   - Demand signals (GitHub issues, Reddit posts, forum threads)
+   - Supply analysis (existing integrations, quality, maintenance status)
+   - Market size estimation (user mentions, engagement metrics)
+   - Trend analysis (growth over time)
+
+4. **Scoring**: Rank opportunities using demand-supply gap algorithm
+
+5. **Output**: Generate actionable reports with:
+   - Quantitative scores and metrics
+   - Verifiable source links
+   - Revenue potential estimates
+   - Trend analysis
+   - Optional AI-enhanced insights
+
+### Multi-Niche Architecture
+
+The system is designed to support multiple analysis domains:
+
+**Current:**
+- ✅ Home Assistant Integrations (primary use case)
+
+**Future Expansion:**
+- 🔄 Developer Tools & Libraries (GitHub + Stack Overflow + npm)
+- 🔄 SaaS Integration Marketplace (Zapier, Make, n8n analysis)
+- 🔄 Content & Creator Niches (Reddit + News API + Hacker News)
+- 🔄 Custom domains (user-defined configurations)
+
+---
+
+## Value Proposition
+
+### How NicheFinder Complements AI Search
+
+| Capability | ChatGPT/AI Tools | NicheFinder | Hybrid Approach |
+|------------|------------------|-------------|-----------------|
+| **Data Freshness** | ❌ Training cutoff (months old) | ✅ Real-time API data | ✅ Current data + AI reasoning |
+| **Verifiable Sources** | ❌ Can't cite specific sources | ✅ Links to GitHub issues, Reddit posts | ✅ Verified data + context |
+| **Quantitative Metrics** | ⚠️ Qualitative estimates | ✅ Precise scores, counts, trends | ✅ Metrics + interpretation |
+| **Repeatability** | ❌ Different answers each time | ✅ Consistent, trackable results | ✅ Consistent + adaptive |
+| **Automated Monitoring** | ❌ Manual re-querying needed | ✅ Scheduled analysis, alerts | ✅ Auto-update + summaries |
+| **Systematic Coverage** | ⚠️ May miss opportunities | ✅ Checks ALL sources | ✅ Complete + prioritized |
+| **Trend Analysis** | ❌ No historical tracking | ✅ Growth rates, time-series | ✅ Trends + predictions |
+| **Multi-Source Fusion** | ❌ Can't query APIs directly | ✅ Combines GitHub + Reddit + Forums | ✅ Integrated + synthesized |
+
+### Key Differentiators
+
+**1. Real-Time Market Intelligence**
+- ChatGPT: "Based on my training data from 2023, Govee integrations were popular..."
+- NicheFinder: "In the last 30 days: 47 new GitHub issues, 234 Reddit posts, +45% growth"
+
+**2. Verifiable, Quantitative Analysis**
+- ChatGPT: "I think there's demand for better Govee support"
+- NicheFinder: "Opportunity Score: 94/100 | Demand:Supply Ratio: 15:1 | Sources: [links]"
+
+**3. Continuous Monitoring**
+- ChatGPT: Requires manual re-querying
+- NicheFinder: "Run every Monday, alert on new opportunities scoring >85"
+
+**4. Structured Data for AI**
+- NicheFinder can feed its structured, verified data to AI for enhanced insights
+- Best of both worlds: quantitative data + qualitative reasoning
+
+### Target Users
+
+**Primary:**
+- Integration developers seeking profitable opportunities
+- Home Assistant power users identifying gaps
+- Market researchers analyzing integration ecosystems
+
+**Secondary:**
+- Product managers validating integration roadmaps
+- Investors evaluating integration platform opportunities
+- Community maintainers prioritizing feature requests
 
 ---
 
@@ -52,8 +147,13 @@ NicheFinder analyzes any US city to identify the top 20 underserved business nic
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        NicheFinder CLI                          │
-│                     (This Repository)                           │
+│                    NicheFinder Multi-Domain CLI                 │
+│                        (This Repository)                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ Niche Config │  │ CLI Interface│  │ Report Generator     │  │
+│  │ (HA, DevTools│  │ (Multi-niche)│  │ (Quantitative + AI)  │  │
+│  │  SaaS, etc.) │  │              │  │                      │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                                  │
                                  ▼
@@ -63,6 +163,15 @@ NicheFinder analyzes any US city to identify the top 20 underserved business nic
 │  │ Connector        │  │ UDM Core         │  │ PEG Executor │  │
 │  │ Generator        │  │ (Normalization)  │  │ (Built-in)   │  │
 │  └──────────────────┘  └──────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      External APIs (Free Tier)                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ GitHub API   │  │ Reddit API   │  │ HACS/Community APIs  │  │
+│  │ (5K req/hr)  │  │ (60 req/min) │  │ (Unlimited)          │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -74,21 +183,29 @@ NicheFinder analyzes any US city to identify the top 20 underserved business nic
 
 ```
 labs-nichefinder/
-├── Cargo.toml                 # Workspace root
-├── README.md                  # Project overview
-├── PRD.md                     # This document
-├── .gitmodules                # Git submodules
+├── Cargo.toml                          # Workspace root
+├── README.md                           # Project overview
+├── PRD.md                              # This document
+├── .gitmodules                         # Git submodules
 ├── deps/
-│   ├── UDM-single/           # Git submodule
-│   └── PEG-Connector-Service/ # Git submodule
+│   └── UDM-single/                    # Git submodule
 ├── crates/
-│   ├── niche-finder-cli/     # CLI application
-│   ├── niche-analyzer/       # Analysis logic
-│   └── niche-scorer/         # Scoring algorithm
+│   ├── connector-generator/           # ✅ Connector generation (Week 1)
+│   ├── niche-finder-cli/              # CLI application (Week 3)
+│   ├── niche-analyzer/                # Analysis logic (Week 2)
+│   └── niche-scorer/                  # Scoring algorithm (Week 2)
+├── config/
+│   └── niches/
+│       ├── home-assistant.yaml        # HA integration config
+│       ├── dev-tools.yaml             # Developer tools config (future)
+│       └── saas-integrations.yaml     # SaaS integrations config (future)
 ├── workflows/
-│   └── analyze_city.yaml     # PEG workflow definition
+│   ├── home-assistant-analysis.yaml   # PEG workflow for HA
+│   └── templates/
+│       └── niche-analysis.yaml        # Reusable workflow template
 └── examples/
-    └── analyze_austin.rs     # Example usage
+    ├── analyze_ha_integrations.rs     # Home Assistant example
+    └── custom_niche.rs                # Custom niche example
 ```
 
 ### Dependency Management
@@ -117,58 +234,146 @@ udm-peg = { path = "deps/UDM-single/crates/udm-peg" }
 udm-connector-generator = { path = "deps/UDM-single/crates/udm-connector-generator" }
 ```
 
+### Example Usage
+
+```bash
+# Analyze Home Assistant integration opportunities
+cargo run -- analyze --niche home-assistant
+
+# Analyze specific device/service
+cargo run -- analyze --niche home-assistant --query "govee led"
+
+# Future: Analyze developer tools
+cargo run -- analyze --niche dev-tools --query "rust web frameworks"
+
+# Generate report with AI insights (future enhancement)
+cargo run -- analyze --niche home-assistant --ai-enhance
+```
+
+**Sample Output:**
+```
+🏠 Home Assistant Integration Opportunities
+============================================
+Analysis Date: 2025-12-11
+Data Sources: GitHub (47 issues), Reddit (234 posts), HACS (156 integrations)
+
+Top 5 Opportunities:
+
+1. Govee LED Advanced Control (Score: 94/100) 🔥
+   ├─ Demand: 47 GitHub issues, 234 Reddit posts, 12 forum threads
+   ├─ Supply: 1 basic official integration, 2 unmaintained HACS integrations
+   ├─ Gap: Music sync, custom effects, advanced scheduling
+   ├─ Market Size: ~15,000 users
+   ├─ Trend: +45% growth (last 30 days)
+   ├─ Revenue Potential: $75K-225K
+   └─ Sources: [GitHub #12345] [Reddit r/ha/abc123] [Forum thread/456]
+
+2. Ecobee Advanced Scheduling (Score: 89/100)
+   ...
+```
+
 ---
 
 ## Implementation Plan
 
-### Week 1: Project Setup & Connector Generation
+### Week 1: Project Setup & Connector Generation ✅
 
-**Days 1-2: Repository Setup**
-- [ ] Create GitHub repository: `labs-nichefinder`
-- [ ] Set up Cargo workspace structure
-- [ ] Add UDM-Single as git submodule
-- [ ] Configure dependencies in Cargo.toml
+**Days 1-2: Repository Setup** ✅
+- [x] Create GitHub repository: `labs-nichefinder`
+- [x] Set up Cargo workspace structure
+- [x] Add UDM-Single as git submodule
+- [x] Configure dependencies in Cargo.toml
 
-**Days 3-4: Connector Generation**
-- [ ] Implement connector generation script
-- [ ] Generate Yelp connector
-- [ ] Generate Google Maps connector
-- [ ] Test connectors independently
+**Days 3-4: Connector Generation** ✅
+- [x] Implement connector generation script
+- [x] Create connector-generator crate
+- [x] Fix UDM-Single compilation issues
+- [x] Commit and push changes
 
-**Day 5: Integration Testing**
-- [ ] Verify connectors work
-- [ ] Document setup process
+**Day 5: Integration Testing & Pivot** 🔄
+- [ ] Test connector generation with free APIs
+- [ ] Pivot to Home Assistant use case
+- [ ] Update PRD with new direction
+- [ ] Generate GitHub, Reddit, HACS connectors
 
 ---
 
 ### Week 2: UDM Integration & PEG Workflow
 
 **Days 1-2: UDM Schema & Mapping**
-- [ ] Define canonical Business schema
-- [ ] Create Yelp → Business mapping
-- [ ] Create Google Maps → Business mapping
-- [ ] Test normalization
+- [ ] Define canonical `IntegrationOpportunity` schema
+- [ ] Create GitHub → IntegrationOpportunity mapping
+- [ ] Create Reddit → IntegrationOpportunity mapping
+- [ ] Create HACS → IntegrationOpportunity mapping
+- [ ] Test normalization across sources
 
 **Days 3-4: PEG Workflow**
-- [ ] Define PEG v0.2 workflow
-- [ ] Implement workflow execution
-- [ ] Test end-to-end
+- [ ] Define PEG v0.2 workflow for Home Assistant analysis
+- [ ] Implement multi-source data collection nodes
+- [ ] Implement normalization node
+- [ ] Implement scoring/analysis node
+- [ ] Test end-to-end workflow execution
+
+**Day 5: Multi-Niche Architecture**
+- [ ] Create niche configuration system
+- [ ] Implement niche selector in CLI
+- [ ] Create home-assistant.yaml config
+- [ ] Create workflow template for reusability
 
 ---
 
 ### Week 3: Analysis, CLI, & Documentation
 
 **Days 1-2: Analysis & Scoring**
-- [ ] Implement scoring algorithm
-- [ ] Generate sample reports
+- [ ] Implement demand-supply gap algorithm
+- [ ] Implement trend analysis (growth rates)
+- [ ] Implement market size estimation
+- [ ] Generate sample reports for Home Assistant
+- [ ] Add verifiable source links to reports
 
 **Days 3-4: CLI Application**
-- [ ] Build CLI
-- [ ] Add output formats
+- [ ] Build multi-niche CLI interface
+- [ ] Add niche selection menu
+- [ ] Add output formats (JSON, Markdown, HTML)
+- [ ] Add filtering and sorting options
+- [ ] Add scheduled analysis support
 
-**Day 5: Documentation**
+**Day 5: Documentation & Demo**
 - [ ] Write comprehensive README
-- [ ] Create demo materials
+- [ ] Create demo video/materials
+- [ ] Document value prop vs AI search
+- [ ] Create presentation deck
+
+---
+
+### Future Enhancements (Post-MVP)
+
+**Phase 2: AI Integration**
+- [ ] Add OpenAI/Claude API connector
+- [ ] Implement hybrid analysis (quantitative + AI insights)
+- [ ] Add natural language query interface
+- [ ] Example: "What Home Assistant integrations should I build for smart lighting?"
+- [ ] AI generates analysis plan → UDM/PEG executes → AI synthesizes results
+
+**Phase 3: Additional Niches**
+- [ ] Developer Tools niche (GitHub + Stack Overflow + npm)
+- [ ] SaaS Integration Marketplace niche (Zapier, Make, n8n)
+- [ ] Content Creator niche (Reddit + News API + Hacker News)
+- [ ] Custom niche builder (user-defined configurations)
+
+**Phase 4: Advanced Features**
+- [ ] Web UI for non-technical users
+- [ ] Automated monitoring and alerts
+- [ ] Historical trend tracking and visualization
+- [ ] Collaborative opportunity scoring
+- [ ] Integration with project management tools
+
+**Phase 5: Natural Language Interface**
+- [ ] Conversational query interface
+- [ ] "Show me trending Home Assistant integration requests from this week"
+- [ ] "Compare Govee vs Philips Hue integration opportunities"
+- [ ] "Alert me when a new high-scoring opportunity emerges"
+- [ ] AI-powered query understanding and workflow generation
 
 ---
 
@@ -176,28 +381,102 @@ udm-connector-generator = { path = "deps/UDM-single/crates/udm-connector-generat
 
 ### Technical Validation
 
-| Criterion | Target |
-|-----------|--------|
-| **Connector Generation** | < 5 minutes |
-| **Workflow Execution** | > 95% success rate |
-| **Performance** | < 2 minutes per city |
+| Criterion | Target | Status |
+|-----------|--------|--------|
+| **Connector Generation** | < 5 minutes | 🔄 In Progress |
+| **Multi-Source Data Collection** | 3+ APIs per niche | 📋 Planned |
+| **Workflow Execution** | > 95% success rate | 📋 Planned |
+| **Performance** | < 2 minutes per analysis | 📋 Planned |
+| **Data Freshness** | Real-time (< 1 hour old) | 📋 Planned |
 
 ### Business Validation
 
+| Criterion | Target | Status |
+|-----------|--------|--------|
+| **Cost** | $0 (free tier APIs only) | ✅ Achieved |
+| **Accuracy** | > 70% opportunity identification | 📋 To Validate |
+| **Verifiability** | 100% sources linked | 📋 Planned |
+| **Repeatability** | Consistent scores ±5% | 📋 To Validate |
+
+### Value Proposition Validation
+
 | Criterion | Target |
 |-----------|--------|
-| **Cost** | $0 (free tier) |
-| **Accuracy** | > 70% |
+| **vs ChatGPT: Data Freshness** | Real-time vs months-old training data |
+| **vs ChatGPT: Verifiability** | 100% sources linked vs unverifiable |
+| **vs ChatGPT: Quantification** | Precise scores vs qualitative estimates |
+| **vs ChatGPT: Automation** | Scheduled analysis vs manual queries |
+| **Complementarity** | Can feed structured data to AI for enhanced insights |
+
+---
+
+## Key Differentiators
+
+### 1. Real-Time Market Intelligence
+Unlike AI tools with training cutoffs, NicheFinder provides current data from live APIs, ensuring opportunities are based on the latest market signals.
+
+### 2. Verifiable, Quantitative Analysis
+Every opportunity includes precise metrics and source links, enabling validation and trust in the analysis.
+
+### 3. Systematic, Repeatable Process
+Consistent methodology ensures comparable results over time, enabling trend tracking and automated monitoring.
+
+### 4. Multi-Source Data Fusion
+UDM normalizes data from heterogeneous sources (GitHub, Reddit, forums, etc.) into unified schemas, providing comprehensive market views.
+
+### 5. Extensible Architecture
+Multi-niche design allows analysis of any integration ecosystem, demonstrating UDM/PEG versatility.
+
+### 6. AI Complementarity
+Structured output can feed AI tools for enhanced qualitative insights, combining quantitative rigor with contextual reasoning.
+
+---
+
+## Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| **API Rate Limits** | High | Use free tier APIs with generous limits; implement caching |
+| **Data Quality** | Medium | Validate against known opportunities; implement confidence scores |
+| **Scope Creep** | Medium | Focus on Home Assistant first; add niches incrementally |
+| **AI Comparison** | Low | Position as complementary, not competitive; emphasize unique value |
+| **Maintenance Burden** | Medium | Use stable APIs; implement graceful degradation |
 
 ---
 
 ## Next Steps
 
-1. **Review & Refine PRD**
-2. **Create GitHub Repository**
-3. **Add Submodules**
-4. **Start Week 1**
+### Immediate (Week 1, Day 5)
+1. ✅ Update PRD with Home Assistant use case
+2. [ ] Generate GitHub API connector
+3. [ ] Generate Reddit API connector
+4. [ ] Test connector generation end-to-end
+5. [ ] Document setup process
+
+### Short-Term (Week 2)
+1. [ ] Define IntegrationOpportunity schema
+2. [ ] Implement UDM mappings
+3. [ ] Create PEG workflow for Home Assistant analysis
+4. [ ] Test multi-source data collection
+
+### Medium-Term (Week 3)
+1. [ ] Implement scoring algorithm
+2. [ ] Build CLI with niche selector
+3. [ ] Generate sample reports
+4. [ ] Create demo materials
+
+### Long-Term (Post-MVP)
+1. [ ] Add AI integration for hybrid analysis
+2. [ ] Implement natural language interface
+3. [ ] Add additional niches (dev tools, SaaS, etc.)
+4. [ ] Build web UI
 
 ---
 
-**For full details, see the complete PRD in the repository.**
+**Version History:**
+- v1.0 (2025-12-11): Initial PRD with local business niche use case
+- v2.0 (2025-12-11): Pivot to Home Assistant integrations, multi-niche architecture, AI complementarity
+
+---
+
+**For implementation details and progress tracking, see CONVERSATION_HANDOFF.md**
