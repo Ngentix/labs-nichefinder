@@ -1,0 +1,3 @@
+[submodule "deps/UDM-single"]
+	path = deps/UDM-single
+	url = https://github.com/Ngentix/UDM-single.git
