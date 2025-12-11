@@ -137,22 +137,25 @@ nodes:
 - Enforcement of API rate limits (e.g., GitHub's 5000 req/hour)
 - Rate limit header parsing and backoff
 
-**What we need to build:**
+**What we should do:**
 ```rust
-// NEW CRATE: crates/rate-limiter
-pub struct ApiRateLimiter {
-    github_remaining: Arc<AtomicU32>,
-    github_reset_at: Arc<Mutex<DateTime<Utc>>>,
+// CONTRIBUTE TO UDM-Single: deps/UDM-single/crates/udm-connectors
+// Add to ExecutionConfig:
+pub struct ExecutionConfig {
+    // ... existing fields ...
+    pub enable_rate_limiting: bool,
+    pub rate_limit_tracker: Option<Arc<RateLimitTracker>>,
 }
 
-impl ApiRateLimiter {
-    pub async fn check_github(&self) -> Result<()> {
-        // Check if we're within GitHub's 5000 req/hour limit
-        // Parse X-RateLimit-Remaining header from responses
-        // Wait if necessary
-    }
+pub struct RateLimitTracker {
+    // Track API usage across executions
+    // Parse X-RateLimit-* headers
+    // Implement backoff when limits approached
 }
 ```
+
+**Decision:** Rate limiting is a general connector capability that benefits all UDM-Single users.
+We should implement it in UDM-Single and contribute it back, then use it in NicheFinder.
 
 ---
 
@@ -199,22 +202,78 @@ pub fn generate_report(opportunities: Vec<IntegrationOpportunity>) -> String {
 
 ---
 
+### 5. Web UI & REST API
+
+**What we need to build:**
+```rust
+// NEW CRATE: crates/api-server
+// Axum-based REST API server
+#[tokio::main]
+async fn main() {
+    let app = Router::new()
+        .route("/api/niches", get(list_niches))
+        .route("/api/analyze", post(run_analysis))
+        .route("/api/opportunities", get(get_opportunities))
+        .route("/api/schedules", get(list_schedules).post(create_schedule));
+
+    axum::Server::bind(&"0.0.0.0:3001".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+```
+
+```typescript
+// NEW: web-ui/ (React + TypeScript)
+// Frontend web application
+```
+
+---
+
+### 6. Job Scheduling
+
+**What we need to build:**
+```rust
+// NEW CRATE: crates/scheduler
+// Cron-based job scheduler using tokio-cron-scheduler
+pub struct JobScheduler {
+    scheduler: tokio_cron_scheduler::JobScheduler,
+    db: SqlitePool,
+}
+
+impl JobScheduler {
+    pub async fn schedule_analysis(&self, niche: String, cron: String) -> Result<Uuid> {
+        // Store scheduled job in database
+        // Register with tokio-cron-scheduler
+        // Execute PEG workflow on schedule
+    }
+}
+```
+
+---
+
 ## 📦 Final Crate Structure
 
 ```
 labs-nichefinder/
 ├── crates/
 │   ├── connector-generator/     ✅ Uses udm-connector-generator (no mods)
-│   ├── rate-limiter/            ❌ NEW - We build this
 │   ├── scoring/                 ❌ NEW - We build this
 │   ├── reporting/               ❌ NEW - We build this
-│   └── cli/                     ❌ NEW - We build this
+│   ├── api-server/              ❌ NEW - REST API with Axum
+│   ├── scheduler/               ❌ NEW - Job scheduling
+│   └── cli/                     ❌ NEW - CLI for one-off analysis
+│
+├── web-ui/                      ❌ NEW - React + TypeScript frontend
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
 │
 ├── workflows/                   ✅ PEG YAML configs (no code)
 │   └── home-assistant-analysis.yaml
 │
 └── deps/
-    └── UDM-single/              ✅ Use as-is (no modifications)
+    └── UDM-single/              ✅ Use as-is (contribute rate limiting)
 ```
 
 ---
@@ -227,11 +286,16 @@ labs-nichefinder/
 - ✅ PEG workflow orchestration
 - ✅ Concurrent execution limits
 
-**Build ourselves:**
-- ❌ API rate limit tracking (GitHub, Reddit limits)
-- ❌ Opportunity scoring algorithm
-- ❌ CLI interface
-- ❌ Report generation
+**Contribute to UDM-Single:**
+- 🔄 API rate limit tracking (benefits all UDM-Single users)
 
-**Total new code:** ~4 crates, ~1 workflow YAML file
+**Build ourselves:**
+- ❌ Opportunity scoring algorithm
+- ❌ Report generation
+- ❌ REST API server (Axum)
+- ❌ Job scheduler (tokio-cron-scheduler)
+- ❌ Web UI (React + TypeScript)
+- ❌ CLI interface (for one-off analysis)
+
+**Total new code:** ~5 Rust crates, ~1 React app, ~1 workflow YAML file
 

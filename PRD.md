@@ -154,11 +154,16 @@ The system is designed to support multiple analysis domains:
 - ✅ Concurrent execution limits
 - ✅ Built-in PEG executor (no external service needed)
 
+**What We Contribute to UDM-Single:**
+- 🔄 API rate limit tracking (benefits all UDM-Single users)
+
 **What We Build:**
-- ❌ API rate limit tracking (GitHub, Reddit API limits)
 - ❌ Opportunity scoring algorithm (demand-supply gap)
-- ❌ CLI interface
 - ❌ Report generation
+- ❌ REST API server (Axum)
+- ❌ Job scheduler (cron-based, scheduled analysis)
+- ❌ Web UI (React + TypeScript)
+- ❌ CLI interface (one-off analysis)
 
 **See:** `UDM_CAPABILITIES_ANALYSIS.md` for detailed breakdown
 
@@ -200,21 +205,200 @@ The system is designed to support multiple analysis domains:
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| **CLI Interface** | 📦 NEW CRATE | User-facing command-line tool |
+| **Web UI** | 📦 NEW (React + TS) | Browser-based interface for niche selection, results, scheduling |
+| **REST API Server** | 📦 NEW CRATE | Axum-based HTTP API for frontend |
+| **Job Scheduler** | 📦 NEW CRATE | Cron-based scheduler for automated analysis |
+| **CLI Interface** | 📦 NEW CRATE | Command-line tool for one-off analysis |
 | **Niche Config** | 📄 YAML FILES | Per-niche configuration (APIs, schemas, scoring) |
 | **Report Generator** | 📦 NEW CRATE | Markdown/JSON output with source links |
 | **Connector Generator** | 📦 WRAPPER CRATE | Calls UDM-Single's generator for GitHub/Reddit/HACS |
-| **Rate Limiter** | 📦 NEW CRATE | Track API usage, enforce GitHub/Reddit limits |
 | **Scoring Engine** | 📦 NEW CRATE | Demand-supply gap, trend analysis (our business logic) |
 | **UDM Core** | ✅ USE AS-IS | Data normalization from UDM-Single |
 | **PEG Executor** | ✅ USE AS-IS | Workflow orchestration from UDM-Single |
 | **PEG Workflows** | 📄 YAML FILES | Workflow definitions (e.g., home-assistant-analysis.yaml) |
+| **Rate Limiter** | 🔄 CONTRIBUTE | Add to UDM-Single's udm-connectors crate |
 
 **Legend:**
 - ✅ **USE AS-IS** - UDM-Single crates, no modifications
 - 📦 **NEW CRATE** - We build this in `crates/`
+- 📦 **NEW (React + TS)** - React + TypeScript frontend
 - 📦 **WRAPPER CRATE** - Thin wrapper that calls UDM-Single
 - 📄 **YAML FILES** - Configuration/workflow files
+- 🔄 **CONTRIBUTE** - Implement in UDM-Single and contribute back
+
+---
+
+## User Interface
+
+### Overview
+
+NicheFinder provides a **web-based UI** built with React and TypeScript, running locally on the user's machine. The UI communicates with a Rust-based REST API server that orchestrates analysis workflows and manages scheduled jobs.
+
+**Deployment Model:**
+- **MVP:** Local-only (runs on localhost:3001)
+- **Future:** Self-hosted or hosted service
+
+---
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Web Browser (localhost:3000)             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │         React + TypeScript Frontend                  │   │
+│  │  ┌────────────┐  ┌────────────┐  ┌──────────────┐   │   │
+│  │  │ Niche      │  │ Results    │  │ Schedule     │   │   │
+│  │  │ Selector   │  │ Table      │  │ Manager      │   │   │
+│  │  └────────────┘  └────────────┘  └──────────────┘   │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼ HTTP REST API
+┌─────────────────────────────────────────────────────────────┐
+│              Rust API Server (localhost:3001)               │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ Axum REST API                                        │   │
+│  │  • GET  /api/niches          - List niches          │   │
+│  │  • POST /api/analyze         - Run analysis         │   │
+│  │  • GET  /api/opportunities   - Get results          │   │
+│  │  • GET  /api/schedules       - List schedules       │   │
+│  │  • POST /api/schedules       - Create schedule      │   │
+│  │  • GET  /api/runs            - Job run history      │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ Job Scheduler (tokio-cron-scheduler)                 │   │
+│  │  • Cron-based scheduling                             │   │
+│  │  • Execute PEG workflows on schedule                 │   │
+│  │  • Store results in SQLite                           │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    PEG Workflow Executor                    │
+│  (UDM-Single's built-in executor)                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Core Features
+
+#### 1. Niche Selection
+- Dropdown to select analysis domain (Home Assistant, Dev Tools, etc.)
+- Display niche description and data sources
+- Show last analysis timestamp
+
+#### 2. Results View
+- **Table View:** Sortable, filterable list of opportunities
+  - Columns: Name, Demand Score, Supply Score, Gap Score, Trend, Sources
+  - Click row to view details
+- **Detail View:** Expanded opportunity information
+  - Demand signals (GitHub issues, Reddit posts, etc.)
+  - Supply analysis (existing integrations, HACS availability)
+  - Trend charts (growth over time)
+  - Source links (verifiable, clickable)
+
+#### 3. Scheduled Analysis (Core Feature)
+- **Create Schedule:**
+  - Select niche
+  - Set cron expression (daily, weekly, custom)
+  - Enable/disable schedule
+- **View Schedules:**
+  - List all scheduled jobs
+  - Show next run time
+  - Edit/delete schedules
+- **Run History:**
+  - View past analysis runs
+  - Compare results over time
+  - Download historical reports
+
+#### 4. Export & Reports
+- Export current results as Markdown, JSON
+- Download historical reports
+- Email notifications (future)
+
+---
+
+### Tech Stack
+
+**Frontend:**
+- **Framework:** React 18 + TypeScript
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS
+- **State Management:** React Query (for API calls)
+- **Routing:** React Router
+- **Charts:** Recharts or Chart.js
+- **HTTP Client:** Axios
+
+**Backend:**
+- **Framework:** Axum (Rust async web framework)
+- **Database:** SQLite (for schedules, results, job history)
+- **Scheduler:** tokio-cron-scheduler
+- **ORM:** SQLx (async SQL toolkit)
+
+---
+
+### Data Persistence
+
+**SQLite Schema:**
+
+```sql
+-- Scheduled jobs
+CREATE TABLE schedules (
+    id TEXT PRIMARY KEY,
+    niche TEXT NOT NULL,
+    cron_expression TEXT NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+-- Job run history
+CREATE TABLE runs (
+    id TEXT PRIMARY KEY,
+    schedule_id TEXT,
+    niche TEXT NOT NULL,
+    status TEXT NOT NULL, -- 'running', 'completed', 'failed'
+    started_at TIMESTAMP NOT NULL,
+    completed_at TIMESTAMP,
+    error_message TEXT,
+    FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+);
+
+-- Analysis results
+CREATE TABLE opportunities (
+    id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    niche TEXT NOT NULL,
+    name TEXT NOT NULL,
+    demand_score REAL NOT NULL,
+    supply_score REAL NOT NULL,
+    gap_score REAL NOT NULL,
+    trend TEXT,
+    data JSONB NOT NULL, -- Full opportunity data
+    created_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (run_id) REFERENCES runs(id)
+);
+```
+
+---
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/niches` | List available niches |
+| POST | `/api/analyze` | Run one-off analysis |
+| GET | `/api/opportunities` | Get opportunities (filtered by run_id, niche) |
+| GET | `/api/schedules` | List all scheduled jobs |
+| POST | `/api/schedules` | Create new schedule |
+| PUT | `/api/schedules/:id` | Update schedule |
+| DELETE | `/api/schedules/:id` | Delete schedule |
+| GET | `/api/runs` | Get job run history |
+| GET | `/api/runs/:id` | Get specific run details |
+| GET | `/api/reports/:id` | Download report (Markdown/JSON) |
 
 ---
 
@@ -233,10 +417,20 @@ labs-nichefinder/
 │   └── UDM-single/                    # Git submodule
 ├── crates/
 │   ├── connector-generator/           # 📦 WRAPPER: Calls udm-connector-generator (Week 1)
-│   ├── rate-limiter/                  # 📦 NEW: API rate limit tracking (Week 2)
 │   ├── scoring/                       # 📦 NEW: Opportunity scoring (Week 2)
-│   ├── reporting/                     # 📦 NEW: Report generation (Week 3)
+│   ├── reporting/                     # 📦 NEW: Report generation (Week 2)
+│   ├── api-server/                    # 📦 NEW: REST API with Axum (Week 3)
+│   ├── scheduler/                     # 📦 NEW: Job scheduling (Week 3)
 │   └── cli/                           # 📦 NEW: CLI application (Week 3)
+├── web-ui/                            # 📦 NEW: React + TypeScript frontend (Week 3-4)
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── api/
+│   │   └── App.tsx
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
 ├── config/
 │   └── niches/
 │       ├── home-assistant.yaml        # HA integration config
@@ -287,18 +481,38 @@ tracing = "0.1"
 
 ### Example Usage
 
+#### Web UI (Primary Interface)
+
+```bash
+# Start the API server and scheduler
+cargo run --bin api-server
+
+# In another terminal, start the React frontend
+cd web-ui
+npm run dev
+
+# Open browser to http://localhost:3000
+# - Select "Home Assistant" from niche dropdown
+# - Click "Run Analysis" for one-off analysis
+# - Or create a schedule (e.g., "Daily at 9am")
+# - View results in sortable table
+# - Click opportunity for detailed view with charts
+```
+
+#### CLI (One-off Analysis)
+
 ```bash
 # Analyze Home Assistant integration opportunities
-cargo run -- analyze --niche home-assistant
+cargo run --bin cli -- analyze --niche home-assistant
 
 # Analyze specific device/service
-cargo run -- analyze --niche home-assistant --query "govee led"
+cargo run --bin cli -- analyze --niche home-assistant --query "govee led"
+
+# Export as JSON
+cargo run --bin cli -- analyze --niche home-assistant --format json > results.json
 
 # Future: Analyze developer tools
-cargo run -- analyze --niche dev-tools --query "rust web frameworks"
-
-# Generate report with AI insights (future enhancement)
-cargo run -- analyze --niche home-assistant --ai-enhance
+cargo run --bin cli -- analyze --niche dev-tools --query "rust web frameworks"
 ```
 
 **Sample Output:**
@@ -351,14 +565,15 @@ Top 5 Opportunities:
 
 ### Week 2: UDM Integration & PEG Workflow
 
-**Days 1-2: UDM Schema & Rate Limiting**
+**Days 1-2: UDM Schema & Rate Limiting (Contribute to UDM-Single)**
 - [ ] Define canonical `IntegrationOpportunity` schema (UDM entity)
 - [ ] Create GitHub → IntegrationOpportunity mapping (UDM transformation)
 - [ ] Create Reddit → IntegrationOpportunity mapping (UDM transformation)
 - [ ] Create HACS → IntegrationOpportunity mapping (UDM transformation)
 - [ ] Test normalization across sources (UDM-Single handles this)
-- [ ] Implement `rate-limiter` crate for GitHub/Reddit API limits
-- [ ] Add rate limit header parsing and backoff logic
+- [ ] **Contribute to UDM-Single:** Implement rate limiting in `udm-connectors`
+- [ ] **Contribute to UDM-Single:** Add rate limit header parsing (X-RateLimit-*)
+- [ ] **Contribute to UDM-Single:** Add backoff logic when limits approached
 
 **Days 3-4: PEG Workflow & Scoring**
 - [ ] Define PEG v0.2 workflow YAML for Home Assistant analysis
@@ -375,23 +590,54 @@ Top 5 Opportunities:
 
 ---
 
-### Week 3: Analysis, CLI, & Documentation
+### Week 3: Backend API & Scheduling
 
-**Days 1-2: Reporting**
-- [ ] Implement `reporting` crate with Markdown formatter
-- [ ] Implement JSON formatter for programmatic access
+**Days 1-2: REST API Server**
+- [ ] Implement `api-server` crate with Axum
+- [ ] Set up SQLite database with SQLx
+- [ ] Implement `/api/niches` endpoint
+- [ ] Implement `/api/analyze` endpoint (run one-off analysis)
+- [ ] Implement `/api/opportunities` endpoint (query results)
+- [ ] Add CORS support for local development
+
+**Days 3-4: Job Scheduling**
+- [ ] Implement `scheduler` crate with tokio-cron-scheduler
+- [ ] Implement `/api/schedules` CRUD endpoints
+- [ ] Implement `/api/runs` endpoints (job history)
+- [ ] Integrate scheduler with PEG workflow executor
+- [ ] Store analysis results in SQLite
+- [ ] Test scheduled job execution
+
+**Day 5: Reporting & CLI**
+- [ ] Implement `reporting` crate with Markdown/JSON formatters
+- [ ] Implement `/api/reports/:id` endpoint
+- [ ] Implement `cli` crate for one-off analysis
 - [ ] Add verifiable source links to reports
-- [ ] Generate sample reports for Home Assistant
-- [ ] Add trend visualization (growth rates, demand-supply charts)
+- [ ] Test end-to-end: schedule → execute → store → retrieve
 
-**Days 3-4: CLI Application**
-- [ ] Implement `cli` crate with clap for argument parsing
-- [ ] Add niche selection (--niche home-assistant)
-- [ ] Add output format selection (--format json|markdown)
-- [ ] Integrate with PEG executor to run workflows
-- [ ] Add filtering and sorting options
+---
 
-**Day 5: Documentation & Demo**
+### Week 4: Web UI & Documentation
+
+**Days 1-2: React Frontend Setup**
+- [ ] Initialize React + TypeScript + Vite project
+- [ ] Set up Tailwind CSS
+- [ ] Set up React Router
+- [ ] Set up React Query for API calls
+- [ ] Create API client (Axios)
+- [ ] Implement basic layout and navigation
+
+**Days 3-4: Core UI Features**
+- [ ] Implement Niche Selector component
+- [ ] Implement Results Table component (sortable, filterable)
+- [ ] Implement Opportunity Detail View
+- [ ] Implement Schedule Manager (create, list, edit, delete)
+- [ ] Implement Run History view
+- [ ] Add trend charts (Recharts)
+
+**Day 5: Polish & Documentation**
+- [ ] Add loading states and error handling
+- [ ] Add export functionality (download reports)
 - [ ] Write comprehensive README
 - [ ] Create demo video/materials
 - [ ] Document value prop vs AI search
