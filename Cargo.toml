@@ -16,12 +16,64 @@ repository = "https://github.com/Ngentix/labs-nichefinder"
 udm-core = { path = "deps/UDM-single/crates/udm-core" }
 udm-peg = { path = "deps/UDM-single/crates/udm-peg" }
 udm-connector-generator = { path = "deps/UDM-single/crates/udm-connector-generator" }
+udm-connectors = { path = "deps/UDM-single/crates/udm-connectors" }
+udm-discovery = { path = "deps/UDM-single/crates/udm-discovery" }
+udm-context = { path = "deps/UDM-single/crates/udm-context" }
+udm-embedding = { path = "deps/UDM-single/crates/udm-embedding" }
+udm-ml = { path = "deps/UDM-single/crates/udm-ml" }
+udm-vector = { path = "deps/UDM-single/crates/udm-vector" }
+udm-systems = { path = "deps/UDM-single/crates/udm-systems" }
+udm-knowledge-graph = { path = "deps/UDM-single/crates/udm-knowledge-graph" }
+udm-cache = { path = "deps/UDM-single/crates/udm-cache" }
+udm-storage = { path = "deps/UDM-single/crates/udm-storage" }
 
 # Common dependencies
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
+thiserror = "1.0"
 tracing = "0.1"
-tracing-subscriber = "0.3"
-clap = { version = "4.0", features = ["derive"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap = { version = "4.0", features = ["derive", "env"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+ulid = { version = "1.0", features = ["serde"] }
+reqwest = { version = "0.11", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+regex = "1.0"
+serde_yaml = "0.9"
+url = "2.4"
+ndarray = "0.15"
+statrs = "0.16"
+
+# ML and embeddings
+candle-core = "0.9"
+candle-nn = "0.9"
+candle-transformers = "0.9"
+tokenizers = "0.22"
+hf-hub = { version = "0.3", features = ["tokio"] }
+
+# Database and caching
+redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
+deadpool-redis = "0.16"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+
+# Additional utilities
+futures = "0.3"
+tokio-util = "0.7"
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+base64 = "0.22"
+jsonwebtoken = "8.3"
+dashmap = "6.1"
+parking_lot = "0.12"
+walkdir = "2.4"
+toml = "0.8"
+indexmap = "2.0"
+unicode-normalization = "0.1"
+strsim = "0.11"
+askama = "0.12"
+askama_axum = "0.4"

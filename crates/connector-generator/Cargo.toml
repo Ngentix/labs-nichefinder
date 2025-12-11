@@ -1,0 +1,25 @@
+[package]
+name = "connector-generator"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "connector-generator"
+path = "src/main.rs"
+
+[dependencies]
+# UDM dependencies
+udm-connector-generator = { workspace = true }
+
+# Common dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+clap = { workspace = true }
+
