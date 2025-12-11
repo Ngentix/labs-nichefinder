@@ -2,7 +2,7 @@
 
 **NicheFinder** - Identify underserved local business niches using AI-powered data analysis.
 
-> **Status:** 🧪 Experimental Lab Project  
+> **Status:** 🧪 Experimental Ngentix Labs Project  
 > **Purpose:** Demonstrate UDM + PEG + Connector ecosystem capabilities end-to-end
 
 ---
