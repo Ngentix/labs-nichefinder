@@ -143,6 +143,27 @@ The system is designed to support multiple analysis domains:
 
 ## Architecture
 
+### Design Principle: Use UDM-Single As-Is
+
+**Critical:** We do NOT modify UDM-Single code. We use it as a dependency and build our business logic on top.
+
+**What UDM-Single Provides (Use As-Is):**
+- ✅ Connector generation (`udm-connector-generator`)
+- ✅ Connector execution with retry, timeout, cache, circuit breaker (`udm-connectors`)
+- ✅ PEG workflow orchestration (`udm-peg`)
+- ✅ Concurrent execution limits
+- ✅ Built-in PEG executor (no external service needed)
+
+**What We Build:**
+- ❌ API rate limit tracking (GitHub, Reddit API limits)
+- ❌ Opportunity scoring algorithm (demand-supply gap)
+- ❌ CLI interface
+- ❌ Report generation
+
+**See:** `UDM_CAPABILITIES_ANALYSIS.md` for detailed breakdown
+
+---
+
 ### System Components
 
 ```
@@ -175,6 +196,26 @@ The system is designed to support multiple analysis domains:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+**Component Breakdown:**
+
+| Component | Type | Description |
+|-----------|------|-------------|
+| **CLI Interface** | 📦 NEW CRATE | User-facing command-line tool |
+| **Niche Config** | 📄 YAML FILES | Per-niche configuration (APIs, schemas, scoring) |
+| **Report Generator** | 📦 NEW CRATE | Markdown/JSON output with source links |
+| **Connector Generator** | 📦 WRAPPER CRATE | Calls UDM-Single's generator for GitHub/Reddit/HACS |
+| **Rate Limiter** | 📦 NEW CRATE | Track API usage, enforce GitHub/Reddit limits |
+| **Scoring Engine** | 📦 NEW CRATE | Demand-supply gap, trend analysis (our business logic) |
+| **UDM Core** | ✅ USE AS-IS | Data normalization from UDM-Single |
+| **PEG Executor** | ✅ USE AS-IS | Workflow orchestration from UDM-Single |
+| **PEG Workflows** | 📄 YAML FILES | Workflow definitions (e.g., home-assistant-analysis.yaml) |
+
+**Legend:**
+- ✅ **USE AS-IS** - UDM-Single crates, no modifications
+- 📦 **NEW CRATE** - We build this in `crates/`
+- 📦 **WRAPPER CRATE** - Thin wrapper that calls UDM-Single
+- 📄 **YAML FILES** - Configuration/workflow files
+
 ---
 
 ## Project Setup
@@ -186,14 +227,16 @@ labs-nichefinder/
 ├── Cargo.toml                          # Workspace root
 ├── README.md                           # Project overview
 ├── PRD.md                              # This document
+├── UDM_CAPABILITIES_ANALYSIS.md        # What UDM-Single provides vs what we build
 ├── .gitmodules                         # Git submodules
 ├── deps/
 │   └── UDM-single/                    # Git submodule
 ├── crates/
-│   ├── connector-generator/           # ✅ Connector generation (Week 1)
-│   ├── niche-finder-cli/              # CLI application (Week 3)
-│   ├── niche-analyzer/                # Analysis logic (Week 2)
-│   └── niche-scorer/                  # Scoring algorithm (Week 2)
+│   ├── connector-generator/           # 📦 WRAPPER: Calls udm-connector-generator (Week 1)
+│   ├── rate-limiter/                  # 📦 NEW: API rate limit tracking (Week 2)
+│   ├── scoring/                       # 📦 NEW: Opportunity scoring (Week 2)
+│   ├── reporting/                     # 📦 NEW: Report generation (Week 3)
+│   └── cli/                           # 📦 NEW: CLI application (Week 3)
 ├── config/
 │   └── niches/
 │       ├── home-assistant.yaml        # HA integration config
@@ -228,10 +271,18 @@ members = [
 ]
 
 [workspace.dependencies]
-# Reference UDM crates from submodule
+# ✅ Reference UDM crates from submodule (use as-is, no modifications)
 udm-core = { path = "deps/UDM-single/crates/udm-core" }
 udm-peg = { path = "deps/UDM-single/crates/udm-peg" }
+udm-connectors = { path = "deps/UDM-single/crates/udm-connectors" }
 udm-connector-generator = { path = "deps/UDM-single/crates/udm-connector-generator" }
+
+# Common dependencies
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
 ```
 
 ### Example Usage
@@ -300,19 +351,21 @@ Top 5 Opportunities:
 
 ### Week 2: UDM Integration & PEG Workflow
 
-**Days 1-2: UDM Schema & Mapping**
-- [ ] Define canonical `IntegrationOpportunity` schema
-- [ ] Create GitHub → IntegrationOpportunity mapping
-- [ ] Create Reddit → IntegrationOpportunity mapping
-- [ ] Create HACS → IntegrationOpportunity mapping
-- [ ] Test normalization across sources
+**Days 1-2: UDM Schema & Rate Limiting**
+- [ ] Define canonical `IntegrationOpportunity` schema (UDM entity)
+- [ ] Create GitHub → IntegrationOpportunity mapping (UDM transformation)
+- [ ] Create Reddit → IntegrationOpportunity mapping (UDM transformation)
+- [ ] Create HACS → IntegrationOpportunity mapping (UDM transformation)
+- [ ] Test normalization across sources (UDM-Single handles this)
+- [ ] Implement `rate-limiter` crate for GitHub/Reddit API limits
+- [ ] Add rate limit header parsing and backoff logic
 
-**Days 3-4: PEG Workflow**
-- [ ] Define PEG v0.2 workflow for Home Assistant analysis
-- [ ] Implement multi-source data collection nodes
-- [ ] Implement normalization node
-- [ ] Implement scoring/analysis node
-- [ ] Test end-to-end workflow execution
+**Days 3-4: PEG Workflow & Scoring**
+- [ ] Define PEG v0.2 workflow YAML for Home Assistant analysis
+- [ ] Configure Action nodes to call GitHub/Reddit/HACS connectors
+- [ ] Configure retry policies, timeouts per node (PEG v0.2 features)
+- [ ] Implement `scoring` crate with demand-supply gap algorithm
+- [ ] Test end-to-end workflow execution (PEG executor is built-in)
 
 **Day 5: Multi-Niche Architecture**
 - [ ] Create niche configuration system
@@ -324,19 +377,19 @@ Top 5 Opportunities:
 
 ### Week 3: Analysis, CLI, & Documentation
 
-**Days 1-2: Analysis & Scoring**
-- [ ] Implement demand-supply gap algorithm
-- [ ] Implement trend analysis (growth rates)
-- [ ] Implement market size estimation
-- [ ] Generate sample reports for Home Assistant
+**Days 1-2: Reporting**
+- [ ] Implement `reporting` crate with Markdown formatter
+- [ ] Implement JSON formatter for programmatic access
 - [ ] Add verifiable source links to reports
+- [ ] Generate sample reports for Home Assistant
+- [ ] Add trend visualization (growth rates, demand-supply charts)
 
 **Days 3-4: CLI Application**
-- [ ] Build multi-niche CLI interface
-- [ ] Add niche selection menu
-- [ ] Add output formats (JSON, Markdown, HTML)
+- [ ] Implement `cli` crate with clap for argument parsing
+- [ ] Add niche selection (--niche home-assistant)
+- [ ] Add output format selection (--format json|markdown)
+- [ ] Integrate with PEG executor to run workflows
 - [ ] Add filtering and sorting options
-- [ ] Add scheduled analysis support
 
 **Day 5: Documentation & Demo**
 - [ ] Write comprehensive README
