@@ -36,6 +36,14 @@ Thumbs.db
 
 # Logs
 *.log
+/logs/
+
+# Process IDs
+.backend.pid
+.frontend.pid
+.connector.pid
+.vault.pid
+.peg-engine.pid
 
 # Scripts from manual testing (deprecated)
 execute-workflow-via-udm.sh

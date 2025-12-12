@@ -93,6 +93,8 @@ cargo run -- analyze --niche home-assistant
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
 ```bash
 # Clone with submodules
 git clone --recursive https://github.com/Ngentix/labs-nichefinder.git
@@ -101,6 +103,85 @@ cd labs-nichefinder
 # Or if already cloned, initialize submodules
 git submodule update --init --recursive
 
+# Install frontend dependencies
+cd web-ui && npm install && cd ..
+
+# (Optional) Create .env file for API keys
+# Required for GitHub and YouTube connectors
+cat > .env << EOF
+GITHUB_API_KEY=your_github_token_here
+YOUTUBE_API_KEY=your_youtube_api_key_here
+EOF
+```
+
+### Option 1: Full Platform Demo (Recommended - END-TO-END System)
+
+Start the **COMPLETE end-to-end UDM + PEG + Connector ecosystem**:
+
+```bash
+# Start ALL services (the real system - no shortcuts!)
+./start-demo.sh
+
+# Access points:
+# - Frontend UI:        http://localhost:5173
+# - Backend API:        http://localhost:3001
+# - PEG Engine:         http://localhost:3007
+# - Credential Vault:   http://localhost:3005
+# - Connector Service:  http://localhost:9004
+
+# Stop all services
+./stop-demo.sh
+```
+
+**What's running (6 services + infrastructure):**
+1. **Infrastructure** (Docker):
+   - PostgreSQL (ports 5436, 5433)
+   - Redis (ports 5379, 6380)
+   - ChromaDB (port 8000)
+2. **credential-vault** (port 3005) - Secure credential storage with AWS KMS encryption
+3. **peg-engine** (port 3007) - Workflow orchestration with BullMQ job queue
+4. **PEG-Connector-Service** (port 9004) - Connector runtime (GitHub, HACS, YouTube, etc.)
+5. **NicheFinder Backend** (port 3001) - REST API server with SQLite database
+6. **Frontend UI** (port 5173) - React web interface
+
+**How it works (end-to-end flow):**
+1. User triggers workflow via UI or API
+2. **peg-engine** receives workflow request
+3. **peg-engine** → **credential-vault** (retrieve encrypted API keys)
+4. **credential-vault** → AWS KMS (decrypt credentials)
+5. **peg-engine** → **PEG-Connector-Service** (execute connectors with credentials)
+6. **PEG-Connector-Service** → External APIs (GitHub, HACS, YouTube)
+7. Results stored as artifacts and returned to UI
+
+**Requirements:**
+- Docker (for PostgreSQL, Redis, ChromaDB)
+- `deps/credential-vault/.env` - AWS credentials for KMS
+- `deps/peg-engine/.env` - Database configuration
+
+### Option 2: Alternative Full Stack Script
+
+If you prefer the alternative script:
+
+```bash
+./start-full-stack.sh  # Same as start-demo.sh
+./stop-full-stack.sh
+```
+
+### Option 3: Connectors Only (For Testing)
+
+Start just the connector service:
+
+```bash
+./start-demo.sh connectors-only
+
+# Test connectors at: http://localhost:9004
+```
+
+### Option 4: CLI Analysis (Original)
+
+Run analysis from the command line:
+
+```bash
 # Build
 cargo build
 
@@ -109,6 +190,36 @@ cargo run -- analyze --niche home-assistant
 
 # Future: Analyze other niches
 cargo run -- analyze --niche dev-tools --query "rust web frameworks"
+```
+
+### Manual Startup (Troubleshooting)
+
+If the scripts don't work, start services manually:
+
+```bash
+# Terminal 1: Start PEG-Connector-Service
+cd deps/PEG-Connector-Service
+cargo run --release --bin peg-connector-service -- --config config.yaml
+
+# Terminal 2: Start backend
+cd crates/nichefinder-server
+cargo run --release
+
+# Terminal 3: Start frontend
+cd web-ui
+npm run dev
+```
+
+### Testing Workflow Execution
+
+Once all services are running, test the workflow:
+
+```bash
+# Test HACS connector (no auth required)
+./demo-no-auth.sh
+
+# Test full workflow (requires API keys in .env)
+./test-workflow-execution.sh
 ```
 
 ---

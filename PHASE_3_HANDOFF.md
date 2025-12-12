@@ -38,22 +38,122 @@
 
 **Key Achievement:** End-to-end validation of UDM + PEG + Connector ecosystem
 
+### Phase 3.1: UI Foundation ✅ COMPLETE
+- Initialized Vite + React + TypeScript project in `web-ui/`
+- Installed all dependencies (Tailwind CSS v4, React Router, Zustand, React Flow, Monaco Editor, Recharts)
+- Created complete project structure with organized directories
+- Built layout components (Header, TabNavigation, Footer)
+- Created shared components (StatusBadge, LoadingSpinner, ErrorMessage, CodeViewer)
+- Implemented API client wrapper with TypeScript types
+
+### Phase 3.2: Backend API Extensions ✅ COMPLETE
+- Extended Rust backend with new endpoints:
+  - `/api/opportunities` - Get opportunities with filtering
+  - `/api/system/status` - Service health checks
+  - `/api/system/stats` - System statistics
+  - `/api/workflows` - List workflows
+  - `/api/workflows/{id}/execute` - Execute workflow
+  - `/api/executions` - List executions
+  - `/api/executions/{id}` - Get execution details
+  - `/api/artifacts` - List artifacts
+  - `/api/artifacts/{id}` - Get artifact details
+  - `/api/connectors` - List connectors
+- Added CORS support for local development
+- Created import script to populate database with 50 opportunities
+- Successfully imported data from analysis results
+
+### Phase 3.3: Results Tab Implementation ✅ COMPLETE
+- Built Results page with sortable table
+- Displays 50 opportunities with scoring details
+- Shows data sources for each opportunity
+- Fixed frontend-backend data structure integration
+- Successfully tested with real data from database
+
+### Phase 3.4: Infrastructure Startup Scripts ✅ COMPLETE
+- Created `start-demo.sh` - Starts ALL 6 services + infrastructure
+- Created `stop-demo.sh` - Stops all services gracefully
+- Updated README.md with comprehensive startup instructions
+- Documented the complete end-to-end architecture flow:
+  1. Infrastructure (PostgreSQL, Redis, ChromaDB)
+  2. credential-vault (port 3005) - AWS KMS encryption
+  3. peg-engine (port 3007) - Workflow orchestration
+  4. PEG-Connector-Service (port 9004) - Connector runtime
+  5. nichefinder-server (port 3001) - REST API
+  6. Frontend UI (port 5173) - React interface
+
+**Key Achievement:** Complete end-to-end system startup with NO shortcuts or workarounds!
+
 ---
 
-## 🚀 Current Task: Build Platform Demo Console UI
+## � Current Status: Phase 3 In Progress
+
+### What's Working Now
+✅ **Full infrastructure startup** - All 6 services start with `./start-demo.sh`
+✅ **Backend API** - 10 endpoints serving data
+✅ **Frontend UI** - Basic React app with 5 tabs
+✅ **Results tab** - Displays 50 opportunities from database
+✅ **End-to-end flow** - peg-engine → credential-vault → PEG-Connector-Service (PROVEN)
+
+### What's Next
+🚧 **Service Call Trace** - Prove the end-to-end integration in the UI
+🚧 **System Overview tab** - Architecture diagram and service health
+🚧 **Workflow Execution tab** - Trigger workflows and watch execution
+🚧 **Data Pipeline tab** - Show raw → normalized → analyzed transformation
+🚧 **Artifacts tab** - Browse and inspect raw data files
+
+---
+
+## 🎯 Next Immediate Task: Service Call Trace
 
 ### Purpose
-Build a **Platform Demo Console** (NOT a business dashboard) that demonstrates the entire UDM + PEG + Connector ecosystem to technical stakeholders.
+**PROVE** that the system uses the real end-to-end flow (not workarounds) by showing actual API calls between services in the UI.
 
-**Think:** AWS Console, Airflow UI, Grafana - not Tableau or Google Analytics
+### What We'll Build
+Add a "Service Call Trace" panel to the Workflow Execution tab that shows:
+1. peg-engine → credential-vault (credential retrieval)
+2. credential-vault → AWS KMS (decryption)
+3. peg-engine → PEG-Connector-Service (connector execution with credentials)
+4. PEG-Connector-Service → External APIs (GitHub, HACS, YouTube)
+5. Results stored as artifacts
 
-### Core Principle
-**Transparency Over Simplicity** - Show the internals, don't hide them:
-- ✅ Raw API responses alongside normalized data
-- ✅ Workflow execution logs in real-time
-- ✅ Connector configurations and schemas
-- ✅ UDM transformation mappings
-- ✅ Service health and architecture
+### Implementation Plan
+See `FEATURE_SERVICE_CALL_TRACE.md` for detailed specification.
+
+**Timeline:** 1-2 days
+- Backend: Add logging middleware to peg-engine
+- Backend: Create `/executions/:id/trace` API endpoint
+- Frontend: Add Service Call Trace panel to Tab 2
+- Frontend: Display real-time API calls with request/response details
+
+---
+
+## 🔮 Future Enhancements
+
+### Opportunity Descriptions (Ollama-based)
+**Goal:** Add human-readable descriptions to each opportunity explaining what it is and why it's valuable.
+
+**Approach:** Use local Ollama LLM to generate descriptions based on:
+- GitHub repo description
+- Topics/tags
+- Stars/forks/issues
+- HACS category
+- Community activity
+
+**Example Output:**
+```
+Name: Xiaomi Home
+Description: A comprehensive Home Assistant integration for controlling Xiaomi smart home devices including lights, sensors, and appliances through the MIoT protocol.
+Value: High community demand with 21K GitHub stars and active development, indicating strong user interest and reliable maintenance.
+```
+
+**Implementation:**
+1. Add `description` and `value_proposition` fields to `NicheOpportunity` struct
+2. Create Ollama integration service
+3. Generate descriptions for all opportunities
+4. Update Results tab UI to display descriptions
+5. Add expandable detail view
+
+**Timeline:** 2-3 days (future phase)
 
 ---
 

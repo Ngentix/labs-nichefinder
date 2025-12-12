@@ -187,7 +187,31 @@
 
 ---
 
-### Phase 8: Polish & Testing (2 days)
+### Phase 8: Service Call Trace (1-2 days) 🆕
+**Goal:** Prove end-to-end integration by showing actual API calls
+
+**Backend Tasks:**
+- [ ] Add HTTP logging middleware to peg-engine
+- [ ] Create execution_traces table in PostgreSQL
+- [ ] Implement trace storage during workflow execution
+- [ ] Create `/executions/:id/trace` API endpoint
+- [ ] Test with existing workflow execution
+
+**Frontend Tasks:**
+- [ ] Create TraceEntry component
+- [ ] Create ServiceCallTrace panel
+- [ ] Add to Workflow Execution tab (below DAG)
+- [ ] Implement real-time polling for trace updates
+- [ ] Add expand/collapse for request/response details
+- [ ] Test with live workflow execution
+
+**Deliverable:** Visual proof of peg-engine → credential-vault → PEG-Connector-Service flow
+
+**See:** `FEATURE_SERVICE_CALL_TRACE.md` for detailed specification
+
+---
+
+### Phase 9: Polish & Testing (2 days)
 **Goal:** Production-ready quality
 
 **Tasks:**
@@ -204,16 +228,20 @@
 
 ---
 
-## Total Timeline: 12 days (2.5 weeks)
+## Total Timeline: 14 days (3 weeks)
 
 **Week 1:**
-- Days 1-2: Foundation + Backend API
-- Days 3-5: Results + System Overview + Workflow Execution
+- Days 1-2: Foundation + Backend API ✅ COMPLETE
+- Days 3-5: Results + System Overview + Workflow Execution (Results ✅ COMPLETE)
 
 **Week 2:**
-- Days 1-2: Artifacts + Data Pipeline
-- Days 3-4: Polish & Testing
-- Day 5: Demo preparation
+- Days 1-2: Service Call Trace 🚧 NEXT
+- Days 3-4: Artifacts + Data Pipeline
+- Day 5: System Overview + Workflow Execution
+
+**Week 3:**
+- Days 1-2: Polish & Testing
+- Day 3: Demo preparation
 
 ---
 
