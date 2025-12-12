@@ -232,49 +232,53 @@ async fn main() {
 
 ### 6. Job Scheduling
 
-**What we need to build:**
+**What we need to build (integrated into server):**
 ```rust
-// NEW CRATE: crates/scheduler
-// Cron-based job scheduler using tokio-cron-scheduler
-pub struct JobScheduler {
-    scheduler: tokio_cron_scheduler::JobScheduler,
-    db: SqlitePool,
-}
+// Part of nichefinder-server, NOT a separate crate
+// scheduler.rs module
+pub async fn setup_scheduler(db: SqlitePool) -> Result<JobScheduler> {
+    let scheduler = JobScheduler::new();
 
-impl JobScheduler {
-    pub async fn schedule_analysis(&self, niche: String, cron: String) -> Result<Uuid> {
-        // Store scheduled job in database
-        // Register with tokio-cron-scheduler
-        // Execute PEG workflow on schedule
-    }
+    // Load schedules from database
+    // Register each with tokio-cron-scheduler
+    // Execute PEG workflows on schedule
+
+    scheduler.start().await?;
+    Ok(scheduler)
 }
 ```
 
 ---
 
-## 📦 Final Crate Structure
+## 📦 Final Crate Structure (LEAN)
 
 ```
 labs-nichefinder/
 ├── crates/
-│   ├── connector-generator/     ✅ Uses udm-connector-generator (no mods)
-│   ├── scoring/                 ❌ NEW - We build this
-│   ├── reporting/               ❌ NEW - We build this
-│   ├── api-server/              ❌ NEW - REST API with Axum
-│   ├── scheduler/               ❌ NEW - Job scheduling
-│   └── cli/                     ❌ NEW - CLI for one-off analysis
+│   ├── nichefinder-core/        ❌ NEW - Scoring, types, reporting (library)
+│   └── nichefinder-server/      ❌ NEW - API + scheduler + SQLite (binary)
 │
-├── web-ui/                      ❌ NEW - React + TypeScript frontend
-│   ├── src/
-│   ├── package.json
-│   └── vite.config.ts
+├── web-ui/                      ❌ NEW - React + TypeScript frontend (minimal)
+│
+├── scripts/
+│   └── generate-connectors.sh   🔧 One-time connector generation script
 │
 ├── workflows/                   ✅ PEG YAML configs (no code)
 │   └── home-assistant-analysis.yaml
 │
+├── config/
+│   └── niches/
+│       └── home-assistant.yaml  📄 Niche configuration
+│
 └── deps/
     └── UDM-single/              ✅ Use as-is (contribute rate limiting)
 ```
+
+**Key Simplifications:**
+- **2 Rust crates** (not 6)
+- **No separate CLI** (use REST API / curl)
+- **Scheduler integrated** into server
+- **Minimal frontend** (no React Query, Router, charts)
 
 ---
 
@@ -286,16 +290,15 @@ labs-nichefinder/
 - ✅ PEG workflow orchestration
 - ✅ Concurrent execution limits
 
-**Contribute to UDM-Single:**
+**Contribute to UDM-Single (optional, post-MVP):**
 - 🔄 API rate limit tracking (benefits all UDM-Single users)
 
-**Build ourselves:**
-- ❌ Opportunity scoring algorithm
-- ❌ Report generation
-- ❌ REST API server (Axum)
-- ❌ Job scheduler (tokio-cron-scheduler)
-- ❌ Web UI (React + TypeScript)
-- ❌ CLI interface (for one-off analysis)
+**Build ourselves (LEAN):**
+- ❌ `nichefinder-core` - Scoring algorithm, types, report formatters
+- ❌ `nichefinder-server` - REST API (Axum) + scheduler + SQLite
+- ❌ `web-ui` - React + TypeScript (minimal dependencies)
+- ❌ PEG workflow YAML
+- ❌ Niche config YAML
 
-**Total new code:** ~5 Rust crates, ~1 React app, ~1 workflow YAML file
+**Total new code:** 2 Rust crates + 1 minimal React app
 

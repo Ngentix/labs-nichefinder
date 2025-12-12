@@ -201,30 +201,32 @@ The system is designed to support multiple analysis domains:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Component Breakdown:**
+**Component Breakdown (Lean Architecture):**
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| **Web UI** | 📦 NEW (React + TS) | Browser-based interface for niche selection, results, scheduling |
-| **REST API Server** | 📦 NEW CRATE | Axum-based HTTP API for frontend |
-| **Job Scheduler** | 📦 NEW CRATE | Cron-based scheduler for automated analysis |
-| **CLI Interface** | 📦 NEW CRATE | Command-line tool for one-off analysis |
+| **Web UI** | 📦 NEW (React + TS) | Single-page app for niche selection, results, scheduling |
+| **nichefinder-server** | 📦 NEW CRATE | Axum REST API + scheduler + SQLite (single binary) |
+| **nichefinder-core** | 📦 NEW CRATE | Scoring algorithm, types, report formatters (library) |
 | **Niche Config** | 📄 YAML FILES | Per-niche configuration (APIs, schemas, scoring) |
-| **Report Generator** | 📦 NEW CRATE | Markdown/JSON output with source links |
-| **Connector Generator** | 📦 WRAPPER CRATE | Calls UDM-Single's generator for GitHub/Reddit/HACS |
-| **Scoring Engine** | 📦 NEW CRATE | Demand-supply gap, trend analysis (our business logic) |
+| **PEG Workflows** | 📄 YAML FILES | Workflow definitions (e.g., home-assistant-analysis.yaml) |
 | **UDM Core** | ✅ USE AS-IS | Data normalization from UDM-Single |
 | **PEG Executor** | ✅ USE AS-IS | Workflow orchestration from UDM-Single |
-| **PEG Workflows** | 📄 YAML FILES | Workflow definitions (e.g., home-assistant-analysis.yaml) |
+| **Connectors** | ✅ USE AS-IS | HTTP connector execution from UDM-Single |
 | **Rate Limiter** | 🔄 CONTRIBUTE | Add to UDM-Single's udm-connectors crate |
 
 **Legend:**
 - ✅ **USE AS-IS** - UDM-Single crates, no modifications
-- 📦 **NEW CRATE** - We build this in `crates/`
-- 📦 **NEW (React + TS)** - React + TypeScript frontend
-- 📦 **WRAPPER CRATE** - Thin wrapper that calls UDM-Single
+- 📦 **NEW CRATE** - We build this in `crates/` (only 2 crates!)
+- 📦 **NEW (React + TS)** - React + TypeScript frontend (minimal dependencies)
 - 📄 **YAML FILES** - Configuration/workflow files
 - 🔄 **CONTRIBUTE** - Implement in UDM-Single and contribute back
+
+**Key Simplifications:**
+- **2 Rust crates** instead of 6 (consolidated)
+- **No separate CLI** - use REST API directly (`curl` for scripting)
+- **Scheduler integrated** into server (not a separate crate)
+- **Minimal frontend** - no routing library, no chart library for MVP
 
 ---
 
@@ -283,59 +285,64 @@ NicheFinder provides a **web-based UI** built with React and TypeScript, running
 
 ---
 
-### Core Features
+### Core Features (MVP)
 
 #### 1. Niche Selection
-- Dropdown to select analysis domain (Home Assistant, Dev Tools, etc.)
+- Dropdown to select analysis domain (Home Assistant for MVP)
 - Display niche description and data sources
-- Show last analysis timestamp
 
 #### 2. Results View
-- **Table View:** Sortable, filterable list of opportunities
-  - Columns: Name, Demand Score, Supply Score, Gap Score, Trend, Sources
-  - Click row to view details
+- **Table View:** Sortable list of opportunities
+  - Columns: Name, Demand Score, Supply Score, Gap Score, Sources
+  - Click row to expand details inline
 - **Detail View:** Expanded opportunity information
-  - Demand signals (GitHub issues, Reddit posts, etc.)
+  - Demand signals (GitHub issues, Reddit posts)
   - Supply analysis (existing integrations, HACS availability)
-  - Trend charts (growth over time)
   - Source links (verifiable, clickable)
 
 #### 3. Scheduled Analysis (Core Feature)
 - **Create Schedule:**
   - Select niche
-  - Set cron expression (daily, weekly, custom)
+  - Set schedule (daily, weekly)
   - Enable/disable schedule
 - **View Schedules:**
   - List all scheduled jobs
   - Show next run time
-  - Edit/delete schedules
+  - Delete schedules
 - **Run History:**
   - View past analysis runs
-  - Compare results over time
-  - Download historical reports
+  - View results from each run
 
-#### 4. Export & Reports
-- Export current results as Markdown, JSON
-- Download historical reports
-- Email notifications (future)
+#### 4. Export
+- Export current results as JSON
+- Download as Markdown report
+
+### Future Features (NOT MVP)
+- ~~Trend charts~~ → Requires multiple runs over time
+- ~~Historical comparison~~ → Requires weeks of data
+- ~~Email notifications~~ → Requires email service
+- ~~Multiple niches~~ → Start with Home Assistant only
 
 ---
 
-### Tech Stack
+### Tech Stack (Minimal)
 
-**Frontend:**
+**Frontend (Simplified for MVP):**
 - **Framework:** React 18 + TypeScript
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS
-- **State Management:** React Query (for API calls)
-- **Routing:** React Router
-- **Charts:** Recharts or Chart.js
-- **HTTP Client:** Axios
+- **HTTP Client:** Native `fetch` (no Axios needed)
 
-**Backend:**
+**What we're NOT using for MVP:**
+- ~~React Query~~ → Simple `useState` + `useEffect`
+- ~~React Router~~ → Single page app, no routing needed
+- ~~Recharts~~ → Charts are future enhancement
+- ~~Axios~~ → Native `fetch` is sufficient
+
+**Backend (Rust):**
 - **Framework:** Axum (Rust async web framework)
 - **Database:** SQLite (for schedules, results, job history)
-- **Scheduler:** tokio-cron-scheduler
+- **Scheduler:** tokio-cron-scheduler (integrated into server)
 - **ORM:** SQLx (async SQL toolkit)
 
 ---
@@ -404,46 +411,67 @@ CREATE TABLE opportunities (
 
 ## Project Setup
 
-### Repository Structure
+### Repository Structure (Lean)
 
 ```
 labs-nichefinder/
 ├── Cargo.toml                          # Workspace root
 ├── README.md                           # Project overview
 ├── PRD.md                              # This document
-├── UDM_CAPABILITIES_ANALYSIS.md        # What UDM-Single provides vs what we build
 ├── .gitmodules                         # Git submodules
+│
 ├── deps/
-│   └── UDM-single/                    # Git submodule
+│   └── UDM-single/                     # Git submodule (use as-is)
+│
 ├── crates/
-│   ├── connector-generator/           # 📦 WRAPPER: Calls udm-connector-generator (Week 1)
-│   ├── scoring/                       # 📦 NEW: Opportunity scoring (Week 2)
-│   ├── reporting/                     # 📦 NEW: Report generation (Week 2)
-│   ├── api-server/                    # 📦 NEW: REST API with Axum (Week 3)
-│   ├── scheduler/                     # 📦 NEW: Job scheduling (Week 3)
-│   └── cli/                           # 📦 NEW: CLI application (Week 3)
-├── web-ui/                            # 📦 NEW: React + TypeScript frontend (Week 3-4)
+│   ├── nichefinder-core/               # 📦 Library: scoring, types, reporting
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       ├── types.rs                # IntegrationOpportunity, NicheConfig
+│   │       ├── scoring.rs              # Demand-supply gap algorithm
+│   │       └── reporting.rs            # Markdown/JSON formatters
+│   │
+│   └── nichefinder-server/             # 📦 Binary: API + scheduler
+│       ├── Cargo.toml
+│       └── src/
+│           ├── main.rs                 # Axum server entry point
+│           ├── api.rs                  # REST endpoints
+│           ├── scheduler.rs            # tokio-cron-scheduler
+│           └── db.rs                   # SQLite with SQLx
+│
+├── web-ui/                             # 📦 React + TypeScript frontend
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── api/
-│   │   └── App.tsx
+│   │   ├── App.tsx                     # Single page app (no router)
+│   │   ├── api.ts                      # Simple fetch wrapper
+│   │   └── components/
+│   │       ├── NicheSelector.tsx
+│   │       ├── ResultsTable.tsx
+│   │       ├── OpportunityDetail.tsx
+│   │       └── ScheduleManager.tsx
+│   ├── index.html
 │   ├── package.json
 │   ├── tsconfig.json
+│   ├── tailwind.config.js
 │   └── vite.config.ts
+│
+├── scripts/
+│   └── generate-connectors.sh          # One-time connector generation
+│
 ├── config/
 │   └── niches/
-│       ├── home-assistant.yaml        # HA integration config
-│       ├── dev-tools.yaml             # Developer tools config (future)
-│       └── saas-integrations.yaml     # SaaS integrations config (future)
-├── workflows/
-│   ├── home-assistant-analysis.yaml   # PEG workflow for HA
-│   └── templates/
-│       └── niche-analysis.yaml        # Reusable workflow template
-└── examples/
-    ├── analyze_ha_integrations.rs     # Home Assistant example
-    └── custom_niche.rs                # Custom niche example
+│       └── home-assistant.yaml         # HA integration config (MVP)
+│
+└── workflows/
+    └── home-assistant-analysis.yaml    # PEG workflow for HA
 ```
+
+**Key Simplifications:**
+- **2 crates only** (nichefinder-core + nichefinder-server)
+- **No CLI crate** - use REST API or curl
+- **No examples directory** - the server IS the example
+- **Single niche config** - Home Assistant only for MVP
+- **Flat component structure** - no pages/, api/ subdirectories
 
 ### Dependency Management
 
@@ -461,15 +489,23 @@ git submodule update --init --recursive
 # Cargo.toml
 [workspace]
 members = [
-    "crates/*",
+    "crates/nichefinder-core",
+    "crates/nichefinder-server",
 ]
 
 [workspace.dependencies]
 # ✅ Reference UDM crates from submodule (use as-is, no modifications)
-udm-core = { path = "deps/UDM-single/crates/udm-core" }
 udm-peg = { path = "deps/UDM-single/crates/udm-peg" }
 udm-connectors = { path = "deps/UDM-single/crates/udm-connectors" }
-udm-connector-generator = { path = "deps/UDM-single/crates/udm-connector-generator" }
+
+# Our crates
+nichefinder-core = { path = "crates/nichefinder-core" }
+
+# Server dependencies
+axum = "0.7"
+tower-http = { version = "0.5", features = ["cors"] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite"] }
+tokio-cron-scheduler = "0.10"
 
 # Common dependencies
 tokio = { version = "1.0", features = ["full"] }
@@ -477,6 +513,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
 tracing = "0.1"
+tracing-subscriber = "0.3"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
 ```
 
 ### Example Usage
@@ -484,35 +523,39 @@ tracing = "0.1"
 #### Web UI (Primary Interface)
 
 ```bash
-# Start the API server and scheduler
-cargo run --bin api-server
+# Start the API server (includes scheduler)
+cargo run --bin nichefinder-server
 
 # In another terminal, start the React frontend
 cd web-ui
 npm run dev
 
-# Open browser to http://localhost:3000
+# Open browser to http://localhost:5173 (Vite default)
 # - Select "Home Assistant" from niche dropdown
 # - Click "Run Analysis" for one-off analysis
 # - Or create a schedule (e.g., "Daily at 9am")
 # - View results in sortable table
-# - Click opportunity for detailed view with charts
+# - Click opportunity for detailed view
 ```
 
-#### CLI (One-off Analysis)
+#### REST API (Scripting / curl)
 
 ```bash
-# Analyze Home Assistant integration opportunities
-cargo run --bin cli -- analyze --niche home-assistant
+# Run one-off analysis
+curl -X POST http://localhost:3001/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"niche": "home-assistant"}'
 
-# Analyze specific device/service
-cargo run --bin cli -- analyze --niche home-assistant --query "govee led"
+# Get opportunities from latest run
+curl http://localhost:3001/api/opportunities
+
+# Create a daily schedule
+curl -X POST http://localhost:3001/api/schedules \
+  -H "Content-Type: application/json" \
+  -d '{"niche": "home-assistant", "cron": "0 9 * * *"}'
 
 # Export as JSON
-cargo run --bin cli -- analyze --niche home-assistant --format json > results.json
-
-# Future: Analyze developer tools
-cargo run --bin cli -- analyze --niche dev-tools --query "rust web frameworks"
+curl http://localhost:3001/api/reports/latest > report.json
 ```
 
 **Sample Output:**
@@ -541,107 +584,89 @@ Top 5 Opportunities:
 
 ## Implementation Plan
 
-### Week 1: Project Setup & Connector Generation ✅
+### Week 1: Project Setup & Architecture ✅
 
 **Days 1-2: Repository Setup** ✅
 - [x] Create GitHub repository: `labs-nichefinder`
-- [x] Set up Cargo workspace structure
+- [x] Set up initial Cargo workspace structure
 - [x] Add UDM-Single as git submodule
-- [x] Configure dependencies in Cargo.toml
-
-**Days 3-4: Connector Generation** ✅
-- [x] Implement connector generation script
-- [x] Create connector-generator crate
 - [x] Fix UDM-Single compilation issues
-- [x] Commit and push changes
+- [x] Create PRD and architecture documents
 
-**Day 5: Integration Testing & Pivot** 🔄
-- [ ] Test connector generation with free APIs
-- [ ] Pivot to Home Assistant use case
-- [ ] Update PRD with new direction
-- [ ] Generate GitHub, Reddit, HACS connectors
-
----
-
-### Week 2: UDM Integration & PEG Workflow
-
-**Days 1-2: UDM Schema & Rate Limiting (Contribute to UDM-Single)**
-- [ ] Define canonical `IntegrationOpportunity` schema (UDM entity)
-- [ ] Create GitHub → IntegrationOpportunity mapping (UDM transformation)
-- [ ] Create Reddit → IntegrationOpportunity mapping (UDM transformation)
-- [ ] Create HACS → IntegrationOpportunity mapping (UDM transformation)
-- [ ] Test normalization across sources (UDM-Single handles this)
-- [ ] **Contribute to UDM-Single:** Implement rate limiting in `udm-connectors`
-- [ ] **Contribute to UDM-Single:** Add rate limit header parsing (X-RateLimit-*)
-- [ ] **Contribute to UDM-Single:** Add backoff logic when limits approached
-
-**Days 3-4: PEG Workflow & Scoring**
-- [ ] Define PEG v0.2 workflow YAML for Home Assistant analysis
-- [ ] Configure Action nodes to call GitHub/Reddit/HACS connectors
-- [ ] Configure retry policies, timeouts per node (PEG v0.2 features)
-- [ ] Implement `scoring` crate with demand-supply gap algorithm
-- [ ] Test end-to-end workflow execution (PEG executor is built-in)
-
-**Day 5: Multi-Niche Architecture**
-- [ ] Create niche configuration system
-- [ ] Implement niche selector in CLI
-- [ ] Create home-assistant.yaml config
-- [ ] Create workflow template for reusability
+**Days 3-5: Architecture Review & Lean Refactor** ✅
+- [x] Review UDM-Single capabilities thoroughly
+- [x] Identify what UDM-Single provides vs what we build
+- [x] Simplify architecture: 6 crates → 2 crates
+- [x] Remove unnecessary components (CLI, separate scheduler)
+- [x] Define minimal frontend (no React Query, Router, charts)
+- [x] Update PRD with lean architecture
 
 ---
 
-### Week 3: Backend API & Scheduling
+### Week 2: Core Library + Server + UI
 
-**Days 1-2: REST API Server**
-- [ ] Implement `api-server` crate with Axum
-- [ ] Set up SQLite database with SQLx
+**Days 1-2: nichefinder-core (Rust Library)**
+- [ ] Create `nichefinder-core` crate structure
+- [ ] Define `IntegrationOpportunity` type in `types.rs`
+- [ ] Define `NicheConfig` type (from YAML)
+- [ ] Implement scoring algorithm in `scoring.rs` (demand-supply gap)
+- [ ] Implement JSON/Markdown formatters in `reporting.rs`
+- [ ] Write unit tests for scoring logic
+
+**Days 3-4: nichefinder-server (Rust Binary)**
+- [ ] Create `nichefinder-server` crate structure
+- [ ] Set up Axum with basic routes
+- [ ] Set up SQLite with SQLx (schedules, runs, opportunities tables)
 - [ ] Implement `/api/niches` endpoint
-- [ ] Implement `/api/analyze` endpoint (run one-off analysis)
-- [ ] Implement `/api/opportunities` endpoint (query results)
-- [ ] Add CORS support for local development
+- [ ] Implement `/api/analyze` endpoint (triggers PEG workflow)
+- [ ] Implement `/api/opportunities` endpoint
+- [ ] Add CORS for local development
 
-**Days 3-4: Job Scheduling**
-- [ ] Implement `scheduler` crate with tokio-cron-scheduler
+**Day 5: Scheduling + PEG Integration**
+- [ ] Integrate tokio-cron-scheduler into server
 - [ ] Implement `/api/schedules` CRUD endpoints
-- [ ] Implement `/api/runs` endpoints (job history)
-- [ ] Integrate scheduler with PEG workflow executor
-- [ ] Store analysis results in SQLite
-- [ ] Test scheduled job execution
-
-**Day 5: Reporting & CLI**
-- [ ] Implement `reporting` crate with Markdown/JSON formatters
-- [ ] Implement `/api/reports/:id` endpoint
-- [ ] Implement `cli` crate for one-off analysis
-- [ ] Add verifiable source links to reports
-- [ ] Test end-to-end: schedule → execute → store → retrieve
+- [ ] Implement `/api/runs` endpoint (job history)
+- [ ] Create PEG workflow YAML for Home Assistant
+- [ ] Connect scheduler to PEG workflow executor
+- [ ] Test: create schedule → wait for trigger → verify results stored
 
 ---
 
-### Week 4: Web UI & Documentation
+### Week 3: Frontend + Polish
 
-**Days 1-2: React Frontend Setup**
+**Days 1-2: React Frontend**
 - [ ] Initialize React + TypeScript + Vite project
 - [ ] Set up Tailwind CSS
-- [ ] Set up React Router
-- [ ] Set up React Query for API calls
-- [ ] Create API client (Axios)
-- [ ] Implement basic layout and navigation
+- [ ] Create simple `api.ts` fetch wrapper
+- [ ] Implement `NicheSelector` component
+- [ ] Implement `ResultsTable` component (sortable)
+- [ ] Implement `OpportunityDetail` component (inline expand)
 
-**Days 3-4: Core UI Features**
-- [ ] Implement Niche Selector component
-- [ ] Implement Results Table component (sortable, filterable)
-- [ ] Implement Opportunity Detail View
-- [ ] Implement Schedule Manager (create, list, edit, delete)
-- [ ] Implement Run History view
-- [ ] Add trend charts (Recharts)
-
-**Day 5: Polish & Documentation**
+**Days 3-4: Scheduling UI + Integration**
+- [ ] Implement `ScheduleManager` component
+- [ ] Implement `RunHistory` component
+- [ ] Add "Run Now" button (one-off analysis)
 - [ ] Add loading states and error handling
-- [ ] Add export functionality (download reports)
-- [ ] Write comprehensive README
-- [ ] Create demo video/materials
-- [ ] Document value prop vs AI search
-- [ ] Create presentation deck
+- [ ] Add JSON export button
+- [ ] End-to-end testing: UI → API → PEG → SQLite → UI
+
+**Day 5: Documentation + Demo**
+- [ ] Write README with setup instructions
+- [ ] Document the architecture (lean, 2 crates)
+- [ ] Create demo walkthrough
+- [ ] Record demo video (optional)
+
+---
+
+### Optional Week 4: Rate Limiting Contribution
+
+**If time permits, contribute rate limiting to UDM-Single:**
+- [ ] Fork UDM-Single or work in deps/UDM-single
+- [ ] Add `RateLimitTracker` to `udm-connectors`
+- [ ] Parse `X-RateLimit-*` headers from responses
+- [ ] Implement backoff when limits approached
+- [ ] Write tests
+- [ ] Create PR to UDM-Single repository
 
 ---
 
