@@ -724,7 +724,16 @@ Top 5 Opportunities:
 
 ### Future Enhancements (Post-MVP)
 
-**Phase 2: UDM Normalization & Data Analysis** 🔄 NEXT
+**Phase 2: UDM Normalization & Data Analysis** 🔄 IN PROGRESS
+- [x] **Fix artifact storage in peg-engine** (2025-12-12)
+  - Modified `deps/peg-engine/src/core/worker.ts` to auto-create artifacts from connector results
+  - Artifacts now stored before output mapping is applied
+  - New execution ID: `309a8a02-293e-4bde-ae6b-d0df6d52844d` with 3 artifacts
+- [x] **Extract workflow execution results** (2025-12-12)
+  - Downloaded HACS integrations (1.4 MB, ~2,000+ integrations)
+  - Downloaded GitHub repositories (134 KB, 20 repos)
+  - Downloaded YouTube videos (30 KB, 20 videos)
+  - Saved to `data/raw/` directory
 - [ ] Setup UDM-single service for data normalization
 - [ ] Define canonical schemas for Home Assistant integration data
 - [ ] Transform raw API responses into UDM format

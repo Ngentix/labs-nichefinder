@@ -1,0 +1,890 @@
+{
+  "etag": "t6E_B-wughdPvS63dqnahWyAtRE",
+  "items": [
+    {
+      "etag": "0O_2qzi2-8Zm-H-Nxv4-dm3c-aM",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "jOmbsr5J69U"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCXuqSBlHAE6Xw-yeJA0Tunw",
+        "channelTitle": "Linus Tech Tips",
+        "description": "But thanks to Homey's help we can start fixing my smart home. If you want a better and more unified smart home, check them out ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-11-17T18:31:21Z",
+        "publishedAt": "2024-11-17T18:31:21Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/jOmbsr5J69U/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/jOmbsr5J69U/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/jOmbsr5J69U/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "My Wife Hates our Smart House"
+      }
+    },
+    {
+      "etag": "pHDas9fJXXAuGcDf3g4WdFdBy74",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "k02P5nghmfs"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UC9x0AN7BWHpCDHSm9NiJFJQ",
+        "channelTitle": "NetworkChuck",
+        "description": "Access Home Assistant (and your house) from anywhere (free): https://ntck.co/twingate_zerotrust I've got a problem only home ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-10-25T16:54:58Z",
+        "publishedAt": "2024-10-25T16:54:58Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/k02P5nghmfs/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/k02P5nghmfs/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/k02P5nghmfs/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "your home automation SUCKS!!"
+      }
+    },
+    {
+      "etag": "OdwP9MCKwdmGReN6RolUkDZ_VDE",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "cb7-Nzy93m0"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCM3hWnv_tshvTS660fhHH7A",
+        "channelTitle": "Jimmy Tries World",
+        "description": "Affiliate links to Smart Home Tech I used and had lots of success with: Kara Light Switch: https://amzn.to/40PwC1V Hue Motion ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-04-30T13:02:19Z",
+        "publishedAt": "2023-04-30T13:02:19Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/cb7-Nzy93m0/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/cb7-Nzy93m0/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/cb7-Nzy93m0/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "I Tried Building the PERFECT Smart Home: What I Learned (Mistakes Included)"
+      }
+    },
+    {
+      "etag": "0Caio1bwRZlhERuSuESVqmYXtuQ",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "XvbVePuP7NY"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UC9x0AN7BWHpCDHSm9NiJFJQ",
+        "channelTitle": "NetworkChuck",
+        "description": "Scam Copilot is available for new users of Bitdefender Premium Security and superior plans. Find out more here: ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-11-04T16:41:36Z",
+        "publishedAt": "2024-11-04T16:41:36Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/XvbVePuP7NY/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/XvbVePuP7NY/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/XvbVePuP7NY/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "my local, AI Voice Assistant (I replaced Alexa!!)"
+      }
+    },
+    {
+      "etag": "nDeahRjf_sz5EDYDxRKaG8VHylo",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "fwc07iXgo6M"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "I put NFC tags all over my house! These NFC home automation ideas will make your life easier... and make you want WAY more ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2022-09-09T19:47:30Z",
+        "publishedAt": "2022-09-09T19:47:30Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/fwc07iXgo6M/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/fwc07iXgo6M/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/fwc07iXgo6M/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Extremely Useful NFC Home Automation Ideas!"
+      }
+    },
+    {
+      "etag": "kQ9sS8wvm_qRh198gbtQkSJYonA",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "WHXYlEB_QmY"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "Whether you're starting or growing a smart home in 2024, this video is packed with tips for beginner to advanced level! Here is the ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-02-17T17:11:15Z",
+        "publishedAt": "2024-02-17T17:11:15Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/WHXYlEB_QmY/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/WHXYlEB_QmY/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/WHXYlEB_QmY/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Ultimate Guide to Starting and Growing a Smart Home!"
+      }
+    },
+    {
+      "etag": "0kByebkEsIegpmuvtUIpb5XYdNU",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "kLcTqfXvlY8"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "I used 50 home automation ideas to automate EVERY minute of my day! Ad: Remove your personal information from the web at ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-11-21T18:28:56Z",
+        "publishedAt": "2024-11-21T18:28:56Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/kLcTqfXvlY8/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/kLcTqfXvlY8/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/kLcTqfXvlY8/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "I Automated EVERY Minute of My Day"
+      }
+    },
+    {
+      "etag": "Y9nT3bsWgX810GqLktNvLj860YY",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "gJFsZL5CTgM"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCR-DXc1voovS8nhAvccRZhg",
+        "channelTitle": "Jeff Geerling",
+        "description": "Home Assistant sent me the Yellow, a new smart home hub with a Raspberry Pi CM4 built-in. It includes Zigbee and can be the ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2022-01-19T15:00:19Z",
+        "publishedAt": "2022-01-19T15:00:19Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/gJFsZL5CTgM/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/gJFsZL5CTgM/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/gJFsZL5CTgM/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Home automation that&#39;s private and local?! (Home Assistant Yellow)"
+      }
+    },
+    {
+      "etag": "Z7s5DyQjL7AH5tc56tzPbB9SjU0",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "JXvTzBlsVD4"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "The Pixel Tablet is a great smart home dashboard, but it took some work to figure it out. Pixel Tablet with dock: ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-06-23T16:02:45Z",
+        "publishedAt": "2023-06-23T16:02:45Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/JXvTzBlsVD4/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/JXvTzBlsVD4/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/JXvTzBlsVD4/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Google accidentally made the ULTIMATE Smart Home Dashboard!"
+      }
+    },
+    {
+      "etag": "5dxfyPBgB6vfermRv64GiuJt0z4",
+      "id": {
+        "channelId": "UCbX3YkedQunLt7EQAdVxh7w",
+        "kind": "youtube#channel"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCbX3YkedQunLt7EQAdVxh7w",
+        "channelTitle": "Home Assistant",
+        "description": "Home Assistant is an open source home automation that puts local control and privacy first. Powered by a worldwide community ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2016-05-16T18:28:57Z",
+        "publishedAt": "2016-05-16T18:28:57Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/0E29t_reebiJ4MfV1cYv0d0trHYiiuKlYjJNC02fpgZLw7hXJE4y-Zobe8K7ZOTp0JbD0nug=s88-c-k-c0xffffffff-no-rj-mo"
+          },
+          "high": {
+            "url": "https://yt3.ggpht.com/0E29t_reebiJ4MfV1cYv0d0trHYiiuKlYjJNC02fpgZLw7hXJE4y-Zobe8K7ZOTp0JbD0nug=s800-c-k-c0xffffffff-no-rj-mo"
+          },
+          "medium": {
+            "url": "https://yt3.ggpht.com/0E29t_reebiJ4MfV1cYv0d0trHYiiuKlYjJNC02fpgZLw7hXJE4y-Zobe8K7ZOTp0JbD0nug=s240-c-k-c0xffffffff-no-rj-mo"
+          }
+        },
+        "title": "Home Assistant"
+      }
+    },
+    {
+      "etag": "P7bUyukW02m_V_nxBYBuY9xsLNU",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "ekMuWyUEfhU"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "These smart home devices are worth it! Let me show you why. See this article for a full list of links: ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-11-23T16:07:07Z",
+        "publishedAt": "2024-11-23T16:07:07Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/ekMuWyUEfhU/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/ekMuWyUEfhU/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/ekMuWyUEfhU/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "30 Cool Smart Home Devices You’ll Actually Want!"
+      }
+    },
+    {
+      "etag": "fWExeflq8K2Lc_hEQVwWfOfiEUg",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "Z4gvkmJ8q48"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "This is the ultimate guide to getting started with Home Assistant. *Links (affiliate)* Home Assistant Green on AmeriDroid: ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-10-12T15:17:05Z",
+        "publishedAt": "2024-10-12T15:17:05Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/Z4gvkmJ8q48/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/Z4gvkmJ8q48/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/Z4gvkmJ8q48/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Ultimate Home Assistant Beginner’s Guide!"
+      }
+    },
+    {
+      "etag": "OFlNhZwxcIAFQKpptCv_3SxFALg",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "vYVVRySM0B0"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCiU--5PKQOMdfMTG7dTKc7g",
+        "channelTitle": "simon42",
+        "description": "Du bist neu in Home Assistant und hast 100 Fragezeichen im Kopf? Du kannst YouTube-Videos nicht folgen, weil die Begriffe ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2022-12-14T16:00:33Z",
+        "publishedAt": "2022-12-14T16:00:33Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/vYVVRySM0B0/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/vYVVRySM0B0/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/vYVVRySM0B0/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Home Assistant Grundlagen für Anfänger - From Zero to Hero 🦸‍♂️"
+      }
+    },
+    {
+      "etag": "q1_YMsm55NmTjQzptKcOgRDG5os",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "FVusYP4fHFM"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCrVLgIniVg6jW38uVqDRIiQ",
+        "channelTitle": "Everything Smart Home",
+        "description": "In todays video I give you my 15 tips I always do when installing a new Home Assistant server, from settings and zones, to security ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-07-21T16:33:25Z",
+        "publishedAt": "2023-07-21T16:33:25Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/FVusYP4fHFM/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/FVusYP4fHFM/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/FVusYP4fHFM/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "15 Home Assistant Tips You MUST Do"
+      }
+    },
+    {
+      "etag": "4CaDPRTgJLZ6EpGKxs7hQ5CtZuQ",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "tGx3lS12d-A"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCyb4PpqVgvKgC9KpkByZaaQ",
+        "channelTitle": "Dusun IoT",
+        "description": "",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-12-28T07:57:28Z",
+        "publishedAt": "2023-12-28T07:57:28Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/tGx3lS12d-A/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/tGx3lS12d-A/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/tGx3lS12d-A/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Perfect Home Assistant Control Panel, video intercom, smart switch all in one device #smarthome #iot"
+      }
+    },
+    {
+      "etag": "coDjzmIPEIsP-NO1Ieq6XQHna3U",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "uTxURzmrVtA"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCmlzNHg8QiWVutUyFOV2UdQ",
+        "channelTitle": "The Stock Pot",
+        "description": "Thanks to PCBWay for sponsoring this project → https://www.pcbway.com/?from=TheStockPot This one has turned out to be my ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2025-09-12T08:35:44Z",
+        "publishedAt": "2025-09-12T08:35:44Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/uTxURzmrVtA/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/uTxURzmrVtA/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/uTxURzmrVtA/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "What My Smart Home Was Missing."
+      }
+    },
+    {
+      "etag": "hrDkY4jPsxWV5H6Eiqd9IJuH5g4",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "MxBa-dTOkCE"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCkUDHpSP0xouVm5QNSJy9ew",
+        "channelTitle": "Future Ai Robots",
+        "description": "Imagine having a smart AI-powered female robot that handles all your household chores effortlessly! From cleaning to ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2025-03-12T07:46:55Z",
+        "publishedAt": "2025-03-12T07:46:55Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/MxBa-dTOkCE/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/MxBa-dTOkCE/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/MxBa-dTOkCE/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "🤖✨ Buy a Female Robot – The Ultimate Home Assistant! #SmartRobot #AI"
+      }
+    },
+    {
+      "etag": "YJOih4HvGKV4tms8JBLMKM792EY",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "kCuA3EWLvIw"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCO2x-p9gg9TLKneXlibGR7w",
+        "channelTitle": "Snazzy Labs",
+        "description": "Matter was supposed to fix the smart home—but stuff is now more confusing than ever. Is there light at the end of the tunnel?",
+        "liveBroadcastContent": "none",
+        "publishTime": "2025-01-15T17:24:02Z",
+        "publishedAt": "2025-01-15T17:24:02Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/kCuA3EWLvIw/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/kCuA3EWLvIw/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/kCuA3EWLvIw/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Smart Homes Still Suck—Here’s Why"
+      }
+    },
+    {
+      "etag": "Db7478Gosgg2-JOPajYYGsOCnRI",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "QXjOTlfiacg"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "If you're looking for cheap smart home devices that are still GOOD, you came to the right place! Building a budget smart home is ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2025-05-17T16:57:34Z",
+        "publishedAt": "2025-05-17T16:57:34Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/QXjOTlfiacg/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/QXjOTlfiacg/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/QXjOTlfiacg/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Cheap Smart Home Devices that are WORTH IT"
+      }
+    },
+    {
+      "etag": "KvlVpCAfionS1rmKEYwXtbcVxGg",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "QbCBI4uZ9s0"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCiU--5PKQOMdfMTG7dTKc7g",
+        "channelTitle": "simon42",
+        "description": "Eines der meistgewünschten Videos von euch ist mein Home Assistant Tablet Dashboard. Auf diesem Wand-Panel zeige ich mir ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-12-06T16:00:16Z",
+        "publishedAt": "2023-12-06T16:00:16Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/QbCBI4uZ9s0/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/QbCBI4uZ9s0/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/QbCBI4uZ9s0/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Das perfekte Home Assistant Wand Panel (und auch noch günstig!)"
+      }
+    },
+    {
+      "etag": "DUb-S0wAT5wnt3FOl0QjMm6_Zyc",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "rqN0LbyBh7o"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCTHZ5imPP8e-szIByaO4Eaw",
+        "channelTitle": "KinCony IoT",
+        "description": "",
+        "liveBroadcastContent": "none",
+        "publishTime": "2021-10-22T10:25:23Z",
+        "publishedAt": "2021-10-22T10:25:23Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/rqN0LbyBh7o/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/rqN0LbyBh7o/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/rqN0LbyBh7o/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "home assistant control so many relay!"
+      }
+    },
+    {
+      "etag": "tEeNyQxhIDLwilnt1av7udGlDWY",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "C_gVtou4xnE"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "It's time to narrow down my smart home system and ONLY use the best! Here's what I decided to stick with and why. Order my shirt ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-12-09T16:54:06Z",
+        "publishedAt": "2023-12-09T16:54:06Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/C_gVtou4xnE/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/C_gVtou4xnE/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/C_gVtou4xnE/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "The BEST Smart Home System money can buy!"
+      }
+    },
+    {
+      "etag": "pZs5mDZ65HClHJrN_gaERFKrwxE",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "L4ONmyjG6ec"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "Home Assistant Voice Preview edition is completely local, but it has some major kinks to work out. Ad: Remove your personal ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-12-19T21:00:12Z",
+        "publishedAt": "2024-12-19T21:00:12Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/L4ONmyjG6ec/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/L4ONmyjG6ec/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/L4ONmyjG6ec/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "This new smart speaker will change everything!"
+      }
+    },
+    {
+      "etag": "MxtwXf7JYM-tOiotzf_d7NfOpKo",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "bzHdg0RLO1I"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "This smart home is COVERED in really cool tech and automations! Follow Jimmy: ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2023-11-11T16:16:29Z",
+        "publishedAt": "2023-11-11T16:16:29Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/bzHdg0RLO1I/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/bzHdg0RLO1I/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/bzHdg0RLO1I/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "This Smart Home makes me jealous! FULL Tour + automation ideas!"
+      }
+    },
+    {
+      "etag": "7txQ5JuSec97bx0k0W8_BD8sEJA",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "l0vsfXwWngg"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCWimnuBF27nwOxgUBJ4qNeg",
+        "channelTitle": "Abrège",
+        "description": "Merci à Surfshark de soutenir ce projet ! Entrez le code \"ABREGE » pour 3 mois supplémentaires gratuits ...",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-04-07T14:01:27Z",
+        "publishedAt": "2024-04-07T14:01:27Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/l0vsfXwWngg/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/l0vsfXwWngg/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/l0vsfXwWngg/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Fabriquer la box domotique parfaite ! (Home Assistant 2024) #zigbee #matter"
+      }
+    },
+    {
+      "etag": "j38Jh59yek7kOBzCkH2J-pHUKpU",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "WqjOW3mY4PA"
+      },
+      "kind": "youtube#searchResult",
+      "snippet": {
+        "channelId": "UCwOBG77Tm8cE24FPxHb_abw",
+        "channelTitle": "Smart Home Solver",
+        "description": "smarthome #shorts #short #homeassistant.",
+        "liveBroadcastContent": "none",
+        "publishTime": "2024-04-18T18:22:40Z",
+        "publishedAt": "2024-04-18T18:22:40Z",
+        "thumbnails": {
+          "default": {
+            "height": 90,
+            "url": "https://i.ytimg.com/vi/WqjOW3mY4PA/default.jpg",
+            "width": 120
+          },
+          "high": {
+            "height": 360,
+            "url": "https://i.ytimg.com/vi/WqjOW3mY4PA/hqdefault.jpg",
+            "width": 480
+          },
+          "medium": {
+            "height": 180,
+            "url": "https://i.ytimg.com/vi/WqjOW3mY4PA/mqdefault.jpg",
+            "width": 320
+          }
+        },
+        "title": "Here’s why Home Assistant is the smart home king 👑"
+      }
+    }
+  ],
+  "kind": "youtube#searchListResponse",
+  "nextPageToken": "CBQQAA",
+  "pageInfo": {
+    "resultsPerPage": 26,
+    "totalResults": 1000000
+  },
+  "regionCode": "US"
+}

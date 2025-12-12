@@ -115,30 +115,58 @@ cd deps/peg-engine && npm run dev
 
 ---
 
-## 📊 Sample Workflow Execution Data
+## 📊 Workflow Execution Data
 
-**Execution ID:** `109b25c7-e0ae-45eb-b346-cbc1f950ce10`
+### ✅ Latest Execution with Artifacts
 
-To retrieve results:
+**Execution ID:** `309a8a02-293e-4bde-ae6b-d0df6d52844d`
+**Status:** COMPLETED with artifacts stored
+**Date:** 2025-12-12
+
+**Artifacts Retrieved:**
+- `fetch_hacs_integrations-result.json` (1.4 MB) - ~2,000+ HACS integrations
+- `search_github_repos-result.json` (134 KB) - 20 GitHub repositories
+- `search_youtube_videos-result.json` (30 KB) - 20 YouTube videos
+
+**Local Files:**
 ```bash
-curl -s http://localhost:3007/api/v1/executions/109b25c7-e0ae-45eb-b346-cbc1f950ce10 | jq .
+data/raw/fetch_hacs_integrations-result.json
+data/raw/search_github_repos-result.json
+data/raw/search_youtube_videos-result.json
 ```
 
-**Expected Data Structure:**
-- `jobs[0]` - HACS integrations list
-- `jobs[1]` - GitHub repositories (home assistant integration search)
-- `jobs[2]` - YouTube videos (home assistant search)
+To retrieve artifacts from API:
+```bash
+curl -s http://localhost:3007/api/v1/executions/309a8a02-293e-4bde-ae6b-d0df6d52844d/artifacts | jq .
+```
+
+### 🔧 Artifact Storage Fix Applied
+
+**Issue:** Workflow executions were completing successfully but artifacts were not being stored.
+
+**Root Cause:** The peg-engine worker was checking for artifacts in `finalResult` after output mapping, but connector data was in `rawResult` before mapping.
+
+**Fix Applied:** Modified `deps/peg-engine/src/core/worker.ts` to automatically create JSON artifacts from connector `rawResult.data` before output mapping is applied (lines 94-119).
+
+**Result:** All connector results are now automatically persisted as downloadable JSON artifacts.
 
 ---
 
 ## 🎯 Phase 2 Implementation Plan
 
-### Step 1: Extract Workflow Results
-- Query peg-engine API for execution results
-- Parse JSON responses from each connector
-- Save raw data to files for inspection
+### ✅ Step 1: Extract Workflow Results (COMPLETE)
+- ✅ Fixed artifact storage in peg-engine worker
+- ✅ Ran new workflow execution with artifact persistence
+- ✅ Downloaded artifacts via API
+- ✅ Saved raw data to `data/raw/` directory
+- ✅ Inspected data structures from HACS, GitHub, YouTube
 
-### Step 2: Setup UDM-single
+**Data Structure Summary:**
+- **HACS**: Object with integration IDs as keys, ~2,000+ integrations
+- **GitHub**: `{total_count, incomplete_results, items[]}` with repo metadata (stars, forks, issues)
+- **YouTube**: `{kind, etag, items[], pageInfo}` with video metadata (title, channel, publishedAt)
+
+### Step 2: Setup UDM-single (NEXT)
 - Configure UDM-single service
 - Define connection to PostgreSQL and ChromaDB
 - Test basic normalization
@@ -170,21 +198,50 @@ curl -s http://localhost:3007/api/v1/executions/109b25c7-e0ae-45eb-b346-cbc1f950
 
 ## 🚀 Next Steps
 
-**Start Here:**
-1. Retrieve workflow execution results from peg-engine
-2. Inspect raw data structure from HACS, GitHub, YouTube
-3. Design canonical schema for integration opportunities
-4. Setup UDM-single service for normalization
+**Current Status:** Step 1 Complete - Artifact Storage Working ✅
+
+**Next Actions:**
+1. ✅ ~~Retrieve workflow execution results from peg-engine~~ **DONE**
+2. ✅ ~~Inspect raw data structure from HACS, GitHub, YouTube~~ **DONE**
+3. 🔄 Design canonical schema for integration opportunities
+4. 🔄 Setup UDM-single service for normalization
+5. 🔄 Implement transformations to normalize raw data
+6. 🔄 Implement scoring algorithm (demand-supply gap)
+7. 🔄 Generate ranked opportunity reports
 
 **Success Criteria:**
 - ✅ Raw data successfully extracted from peg-engine
-- ✅ UDM-single running and connected to databases
-- ✅ Canonical schema defined and validated
-- ✅ Data normalized and stored in PostgreSQL
-- ✅ Opportunity scores calculated
-- ✅ Report generated with top 10 opportunities
+- ✅ Artifacts stored and downloadable
+- ✅ Data structure inspected and understood
+- 🔄 UDM-single running and connected to databases
+- 🔄 Canonical schema defined and validated
+- 🔄 Data normalized and stored in PostgreSQL
+- 🔄 Opportunity scores calculated
+- 🔄 Report generated with top 10 opportunities
 
 ---
 
-**Ready to begin Phase 2!**
+## 📝 Session Handoff Notes
+
+**What Was Accomplished:**
+1. Debugged and fixed artifact storage issue in peg-engine
+2. Modified `deps/peg-engine/src/core/worker.ts` to auto-create artifacts from connector results
+3. Ran new workflow execution (ID: `309a8a02-293e-4bde-ae6b-d0df6d52844d`)
+4. Successfully retrieved 3 artifacts (HACS: 1.4MB, GitHub: 134KB, YouTube: 30KB)
+5. Downloaded and saved raw data to `data/raw/` directory
+6. Inspected data structures to understand schema for UDM normalization
+
+**Key Technical Details:**
+- The fix was applied to `deps/peg-engine/src/core/worker.ts` lines 94-119
+- Artifacts are now created from `rawResult.data` before output mapping
+- All connector results are automatically persisted as JSON artifacts
+- End-to-end workflow execution is now fully proven
+
+**Services Running:**
+- Terminal 233: peg-engine (port 3007) - Running with tsx watch (auto-restarts)
+- credential-vault (port 3005) - May need restart
+- PEG-Connector-Service (port 9004)
+- PostgreSQL, Redis, ChromaDB (via Docker)
+
+**Ready for Phase 2 Step 2: UDM-single Setup!**
 
