@@ -8,6 +8,7 @@ pub mod types;
 pub mod scoring;
 pub mod reporting;
 pub mod collectors;
+pub mod connector_gen;
 
 // Re-export commonly used types
 pub use error::{Error, Result};

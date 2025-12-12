@@ -22,6 +22,10 @@ Thumbs.db
 # Generated files
 /connectors/*.yaml
 /workflows/*.yaml
+/generated_connectors/
+
+# External dependencies (cloned repos)
+/deps/PEG-Connector-Service/
 
 # Logs
 *.log

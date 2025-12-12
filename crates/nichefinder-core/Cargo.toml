@@ -12,6 +12,7 @@ udm-core.workspace = true
 udm-peg.workspace = true
 udm-connectors.workspace = true
 udm-discovery.workspace = true
+udm-connector-generator = { path = "../../deps/UDM-single/crates/udm-connector-generator" }
 
 # Async runtime
 tokio.workspace = true

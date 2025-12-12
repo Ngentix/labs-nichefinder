@@ -2,6 +2,9 @@
 members = [
     "crates/*",
 ]
+exclude = [
+    "deps/PEG-Connector-Service",
+]
 resolver = "2"
 
 [workspace.package]
