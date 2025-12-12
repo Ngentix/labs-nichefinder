@@ -31,24 +31,42 @@ pub struct HacsCollector {
 }
 
 /// HACS integration metadata from data.json
+/// All fields are optional except manifest, domain, and full_name which are always present
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HacsIntegration {
     pub manifest: HacsManifest,
-    pub description: String,
-    pub downloads: u64,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub downloads: Option<u64>,
     pub domain: String,
     pub full_name: String,
-    pub last_updated: String,
+    #[serde(default)]
+    pub last_updated: Option<String>,
+    #[serde(default)]
     pub last_version: Option<String>,
-    pub manifest_name: String,
-    pub stargazers_count: u64,
+    #[serde(default)]
+    pub manifest_name: Option<String>,
+    #[serde(default)]
+    pub stargazers_count: Option<u64>,
+    #[serde(default)]
     pub topics: Vec<String>,
+    #[serde(default)]
     pub open_issues: Option<u64>,
+    #[serde(default)]
+    pub last_commit: Option<String>,
+    #[serde(default)]
+    pub etag_releases: Option<String>,
+    #[serde(default)]
+    pub etag_repository: Option<String>,
+    #[serde(default)]
+    pub last_fetched: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HacsManifest {
-    pub name: String,
+    #[serde(default)]
+    pub name: Option<String>,
     #[serde(default)]
     pub country: Vec<String>,
 }
