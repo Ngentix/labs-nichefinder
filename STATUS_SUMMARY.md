@@ -99,11 +99,17 @@
 
 ## 🔮 Future Enhancements (Post-Phase 3)
 
-### Opportunity Descriptions (Ollama-based)
+### Opportunity Descriptions (AI-Generated)
 **Goal:** Add human-readable descriptions to each opportunity
 
+**LLM Options:**
+- **Ollama (Preferred):** Local, private, no API costs
+- **OpenAI (Fallback):** Higher quality, but ONLY for public data (GitHub descriptions, topics, stars)
+- **CRITICAL:** NEVER send proprietary data (PEG workflows, UDM schemas) to OpenAI
+
 **Approach:**
-- Use local Ollama LLM to generate descriptions
+- Use Ollama by default for all descriptions
+- OpenAI as fallback with strict data filtering (public data only)
 - Based on: GitHub description, topics, stars, HACS category, community activity
 - Add `description` and `value_proposition` fields to `NicheOpportunity` struct
 - Update Results tab UI to display descriptions
@@ -111,10 +117,10 @@
 **Example:**
 ```
 Name: Xiaomi Home
-Description: A comprehensive Home Assistant integration for controlling 
-Xiaomi smart home devices including lights, sensors, and appliances 
+Description: A comprehensive Home Assistant integration for controlling
+Xiaomi smart home devices including lights, sensors, and appliances
 through the MIoT protocol.
-Value: High community demand with 21K GitHub stars and active development, 
+Value: High community demand with 21K GitHub stars and active development,
 indicating strong user interest and reliable maintenance.
 ```
 

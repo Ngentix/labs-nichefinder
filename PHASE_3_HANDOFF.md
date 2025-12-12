@@ -129,29 +129,60 @@ See `FEATURE_SERVICE_CALL_TRACE.md` for detailed specification.
 
 ## 🔮 Future Enhancements
 
-### Opportunity Descriptions (Ollama-based)
+### Opportunity Descriptions (AI-Generated)
 **Goal:** Add human-readable descriptions to each opportunity explaining what it is and why it's valuable.
 
-**Approach:** Use local Ollama LLM to generate descriptions based on:
-- GitHub repo description
-- Topics/tags
-- Stars/forks/issues
-- HACS category
-- Community activity
+**LLM Options:**
+
+**Option 1: Ollama (Preferred)** ⭐
+- **Pros:** Local, private, no API costs, no data leaves our infrastructure
+- **Cons:** Requires local Ollama installation
+- **Use Case:** All opportunity descriptions (no proprietary data concerns)
+
+**Option 2: OpenAI**
+- **Pros:** Higher quality, faster, no local setup
+- **Cons:** API costs, data sent to external service
+- **Use Case:** ONLY for public data (GitHub descriptions, topics, stars)
+- **CRITICAL:** NEVER send proprietary data (PEG workflows, UDM schemas, internal analysis)
+
+**Data Classification:**
+```
+✅ SAFE for OpenAI:
+- GitHub repo descriptions
+- GitHub topics/tags
+- Star/fork/issue counts
+- HACS category names
+- Public community activity
+
+❌ NEVER send to OpenAI:
+- PEG workflow definitions
+- UDM transformation schemas
+- Internal scoring algorithms
+- Proprietary analysis logic
+- Custom connector implementations
+```
+
+**Recommended Approach:**
+1. **Use Ollama by default** (preferred for privacy)
+2. **OpenAI as fallback** (if Ollama unavailable, with data filtering)
 
 **Example Output:**
 ```
 Name: Xiaomi Home
-Description: A comprehensive Home Assistant integration for controlling Xiaomi smart home devices including lights, sensors, and appliances through the MIoT protocol.
-Value: High community demand with 21K GitHub stars and active development, indicating strong user interest and reliable maintenance.
+Description: A comprehensive Home Assistant integration for controlling
+Xiaomi smart home devices including lights, sensors, and appliances
+through the MIoT protocol.
+Value: High community demand with 21K GitHub stars and active development,
+indicating strong user interest and reliable maintenance.
 ```
 
 **Implementation:**
 1. Add `description` and `value_proposition` fields to `NicheOpportunity` struct
-2. Create Ollama integration service
-3. Generate descriptions for all opportunities
-4. Update Results tab UI to display descriptions
-5. Add expandable detail view
+2. Create LLM service with dual provider support (Ollama + OpenAI)
+3. Implement data filtering for OpenAI (public data only)
+4. Generate descriptions for all opportunities
+5. Update Results tab UI to display descriptions
+6. Add expandable detail view
 
 **Timeline:** 2-3 days (future phase)
 
