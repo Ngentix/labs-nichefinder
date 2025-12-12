@@ -124,26 +124,171 @@ impl DataCollector for HacsCollector {
     }
 }
 
-/// GitHub data collector (placeholder for now)
+/// GitHub API response for repository data
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitHubRepository {
+    pub id: u64,
+    pub name: String,
+    pub full_name: String,
+    pub description: Option<String>,
+    pub html_url: String,
+    pub stargazers_count: u64,
+    pub watchers_count: u64,
+    pub forks_count: u64,
+    pub open_issues_count: u64,
+    pub language: Option<String>,
+    pub topics: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub pushed_at: String,
+    #[serde(default)]
+    pub license: Option<GitHubLicense>,
+    #[serde(default)]
+    pub has_issues: bool,
+    #[serde(default)]
+    pub has_discussions: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitHubLicense {
+    pub key: String,
+    pub name: String,
+    pub spdx_id: Option<String>,
+}
+
+/// GitHub API response for issue/PR data
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitHubIssue {
+    pub id: u64,
+    pub number: u64,
+    pub title: String,
+    pub state: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub closed_at: Option<String>,
+    pub comments: u64,
+    #[serde(default)]
+    pub labels: Vec<GitHubLabel>,
+    pub pull_request: Option<serde_json::Value>, // Present if this is a PR
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitHubLabel {
+    pub name: String,
+    pub color: String,
+}
+
+/// GitHub search API response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitHubSearchResponse {
+    pub total_count: u64,
+    pub incomplete_results: bool,
+    pub items: Vec<GitHubRepository>,
+}
+
+/// GitHub collector for fetching repository and issue data
 pub struct GitHubCollector {
-    // TODO: Implement GitHub API connector
+    connector: RestApiConnector,
 }
 
 impl GitHubCollector {
-    pub async fn new() -> Result<Self> {
-        Ok(Self {})
+    /// Create a new GitHub collector with optional authentication token
+    /// Token should be a GitHub Personal Access Token (PAT)
+    pub async fn new(token: Option<String>) -> Result<Self> {
+        let mut config = RestApiConfig::default();
+        config.base_url = "https://api.github.com".to_string();
+        config.timeout_seconds = 30;
+
+        // Add authentication header if token is provided
+        if let Some(token) = token {
+            config.default_headers.insert(
+                "Authorization".to_string(),
+                format!("Bearer {}", token),
+            );
+        }
+
+        // GitHub API requires User-Agent header
+        config.default_headers.insert(
+            "User-Agent".to_string(),
+            "NicheFinder/0.1.0".to_string(),
+        );
+
+        // GitHub API v3 accepts this header
+        config.default_headers.insert(
+            "Accept".to_string(),
+            "application/vnd.github.v3+json".to_string(),
+        );
+
+        let connector = RestApiConnector::with_config(config)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        Ok(Self { connector })
+    }
+
+    /// Fetch repository information by owner and repo name
+    pub async fn fetch_repository(&self, owner: &str, repo: &str) -> Result<GitHubRepository> {
+        let path = format!("/repos/{}/{}", owner, repo);
+        let response = self.connector.get(&path, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let repository: GitHubRepository = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        Ok(repository)
+    }
+
+    /// Fetch issues for a repository (includes PRs by default)
+    pub async fn fetch_issues(&self, owner: &str, repo: &str, state: &str) -> Result<Vec<GitHubIssue>> {
+        let path = format!("/repos/{}/{}/issues?state={}&per_page=100", owner, repo, state);
+        let response = self.connector.get(&path, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let issues: Vec<GitHubIssue> = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        Ok(issues)
+    }
+
+    /// Search for repositories matching a query
+    pub async fn search_repositories(&self, query: &str) -> Result<GitHubSearchResponse> {
+        let encoded_query = urlencoding::encode(query);
+        let path = format!("/search/repositories?q={}&per_page=100", encoded_query);
+        let response = self.connector.get(&path, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let search_result: GitHubSearchResponse = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        Ok(search_result)
     }
 }
 
 #[async_trait]
 impl DataCollector for GitHubCollector {
     async fn collect(&self) -> Result<Vec<CollectedData>> {
-        // TODO: Implement GitHub data collection
-        Ok(vec![])
+        // Search for Home Assistant integration repositories
+        let query = "home-assistant topic:home-assistant language:python";
+        let search_result = self.search_repositories(query).await?;
+
+        let collected_data = search_result.items
+            .into_iter()
+            .map(|repo| CollectedData {
+                source: "github".to_string(),
+                data_type: "repository".to_string(),
+                raw_data: serde_json::to_value(&repo).unwrap_or_default(),
+                collected_at: chrono::Utc::now(),
+            })
+            .collect();
+
+        Ok(collected_data)
     }
-    
+
     fn source_name(&self) -> &str {
-        "GitHub"
+        "github"
     }
 }
 
