@@ -234,11 +234,26 @@ The system is designed to support multiple analysis domains:
 
 ### Overview
 
-NicheFinder provides a **web-based UI** built with React and TypeScript, running locally on the user's machine. The UI communicates with a Rust-based REST API server that orchestrates analysis workflows and manages scheduled jobs.
+NicheFinder provides a **Platform Demo Console** - a web-based UI built with React and TypeScript that demonstrates the end-to-end UDM + PEG + Connector ecosystem. Unlike a traditional business dashboard, this UI is designed to **prove the platform works** by showing every component, transformation, and data flow.
 
-**Deployment Model:**
-- **MVP:** Local-only (runs on localhost:3001)
-- **Future:** Self-hosted or hosted service
+**Purpose:** Technical demonstration and validation tool
+**Audience:** Engineering team, technical stakeholders, potential partners
+**Deployment Model:** Local-only (runs on localhost:3000)
+
+**Think:** AWS Console, Airflow UI, Grafana - not Tableau or Google Analytics
+
+---
+
+### Core Principle: Transparency Over Simplicity
+
+**Show the internals, don't hide them:**
+- ✅ Raw API responses alongside normalized data
+- ✅ Workflow execution logs in real-time
+- ✅ Connector configurations and schemas
+- ✅ UDM transformation mappings
+- ✅ Service health and architecture
+
+**Why:** The goal is to PROVE the system works, not just show results.
 
 ---
 
@@ -248,11 +263,30 @@ NicheFinder provides a **web-based UI** built with React and TypeScript, running
 ┌─────────────────────────────────────────────────────────────┐
 │                    Web Browser (localhost:3000)             │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │         React + TypeScript Frontend                  │   │
-│  │  ┌────────────┐  ┌────────────┐  ┌──────────────┐   │   │
-│  │  │ Niche      │  │ Results    │  │ Schedule     │   │   │
-│  │  │ Selector   │  │ Table      │  │ Manager      │   │   │
-│  │  └────────────┘  └────────────┘  └──────────────┘   │   │
+│  │         Platform Demo Console (React + TypeScript)   │   │
+│  │                                                          │
+│  │  [🏗️ System] [⚡ Workflow] [🔄 Pipeline] [📊 Results] [📦 Artifacts] │
+│  │                                                          │
+│  │  Tab 1: System Overview                                  │
+│  │    • Architecture diagram with service health            │
+│  │    • System statistics dashboard                         │
+│  │                                                          │
+│  │  Tab 2: Workflow Execution                               │
+│  │    • Visual workflow DAG (React Flow)                    │
+│  │    • Manual execution trigger                            │
+│  │    • Real-time execution logs                            │
+│  │                                                          │
+│  │  Tab 3: Data Pipeline                                    │
+│  │    • Raw → Normalized → Analyzed (3-column view)         │
+│  │    • Transformation rules visualization                  │
+│  │                                                          │
+│  │  Tab 4: Results                                          │
+│  │    • Opportunities table with scoring                    │
+│  │    • Export functionality                                │
+│  │                                                          │
+│  │  Tab 5: Artifacts                                        │
+│  │    • File browser for raw data                           │
+│  │    • JSON preview with Monaco Editor                     │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                           │
@@ -260,84 +294,157 @@ NicheFinder provides a **web-based UI** built with React and TypeScript, running
 ┌─────────────────────────────────────────────────────────────┐
 │              Rust API Server (localhost:3001)               │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ Axum REST API                                        │   │
-│  │  • GET  /api/niches          - List niches          │   │
-│  │  • POST /api/analyze         - Run analysis         │   │
-│  │  • GET  /api/opportunities   - Get results          │   │
-│  │  • GET  /api/schedules       - List schedules       │   │
-│  │  • POST /api/schedules       - Create schedule      │   │
-│  │  • GET  /api/runs            - Job run history      │   │
-│  └──────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │ Job Scheduler (tokio-cron-scheduler)                 │   │
-│  │  • Cron-based scheduling                             │   │
-│  │  • Execute PEG workflows on schedule                 │   │
-│  │  • Store results in SQLite                           │   │
+│  │ Axum REST API (Extended)                             │   │
+│  │  • GET  /api/system/status       - Service health   │   │
+│  │  • GET  /api/workflows           - List workflows    │   │
+│  │  • POST /api/workflows/:id/exec  - Execute workflow  │   │
+│  │  • GET  /api/executions          - Execution history │   │
+│  │  • GET  /api/artifacts           - List artifacts    │   │
+│  │  • GET  /api/opportunities       - Get results       │   │
+│  │  • GET  /api/connectors          - List connectors   │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    PEG Workflow Executor                    │
-│  (UDM-Single's built-in executor)                           │
+│                    PEG Engine (port 3007)                   │
+│  • Workflow orchestration                                   │
+│  • Connector execution                                      │
+│  • Artifact storage                                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Core Features (MVP)
+### The 5 Core Tabs
 
-#### 1. Niche Selection
-- Dropdown to select analysis domain (Home Assistant for MVP)
-- Display niche description and data sources
+#### Tab 1: 🏗️ System Overview
+**Purpose:** Show the architecture and service health
 
-#### 2. Results View
-- **Table View:** Sortable list of opportunities
-  - Columns: Name, Demand Score, Supply Score, Gap Score, Sources
-  - Click row to expand details inline
-- **Detail View:** Expanded opportunity information
-  - Demand signals (GitHub issues, Reddit posts)
-  - Supply analysis (existing integrations, HACS availability)
-  - Source links (verifiable, clickable)
+**Components:**
+- Architecture diagram (visual representation of all services)
+- Service health indicators:
+  - peg-engine (port 3007)
+  - credential-vault (port 3005)
+  - PEG-Connector-Service (port 9004)
+  - PostgreSQL, Redis, ChromaDB
+- Quick stats dashboard:
+  - Total workflows executed
+  - Total artifacts stored
+  - Total opportunities identified
+  - Last execution timestamp
+- "System Check" button to verify all services
 
-#### 3. Scheduled Analysis (Core Feature)
-- **Create Schedule:**
-  - Select niche
-  - Set schedule (daily, weekly)
-  - Enable/disable schedule
-- **View Schedules:**
-  - List all scheduled jobs
-  - Show next run time
-  - Delete schedules
-- **Run History:**
-  - View past analysis runs
-  - View results from each run
-
-#### 4. Export
-- Export current results as JSON
-- Download as Markdown report
-
-### Future Features (NOT MVP)
-- ~~Trend charts~~ → Requires multiple runs over time
-- ~~Historical comparison~~ → Requires weeks of data
-- ~~Email notifications~~ → Requires email service
-- ~~Multiple niches~~ → Start with Home Assistant only
+**Demo Value:** "Here's our architecture with 6 services running"
 
 ---
 
-### Tech Stack (Minimal)
+#### Tab 2: ⚡ Workflow Execution
+**Purpose:** Manually trigger workflows and watch execution in real-time
 
-**Frontend (Simplified for MVP):**
+**Components:**
+- Workflow selector dropdown (Home Assistant Analysis)
+- Workflow definition viewer (YAML/JSON with syntax highlighting)
+- Visual workflow DAG showing:
+  - Step 1: Fetch HACS Integrations
+  - Step 2: Search GitHub Repos
+  - Step 3: Search YouTube Videos
+  - Status for each step (pending/running/complete/failed)
+- "Execute Workflow" button
+- Real-time execution log (streaming)
+- Execution history table
+
+**Demo Value:** "Let's execute a workflow and watch it run"
+
+---
+
+#### Tab 3: 🔄 Data Pipeline
+**Purpose:** Show raw → normalized → analyzed transformation
+
+**Components:**
+- Three-column layout:
+  - **Column 1: Raw Data** (from connector)
+  - **Column 2: Normalized Data** (UDM schema)
+  - **Column 3: Analyzed Data** (with scores)
+- Data source selector (HACS, GitHub, YouTube)
+- Sample data viewer with syntax highlighting
+- Transformation logic display:
+  - Show mapping rules
+  - Highlight fields being transformed
+  - Show UDM schema definition
+
+**Demo Value:** "Here's how we transform raw data to normalized schema"
+
+---
+
+#### Tab 4: 📊 Results
+**Purpose:** Show the actual opportunities (business value)
+
+**Components:**
+- Top opportunities table (sortable, filterable)
+- Opportunity detail cards with:
+  - Scoring breakdown (demand, feasibility, competition, trend)
+  - Source attribution (which APIs contributed)
+  - GitHub stats, YouTube mentions
+  - Links to sources
+- Scoring methodology explanation
+- Export functionality (JSON, Markdown, CSV)
+
+**Demo Value:** "Here are the top 20 opportunities with scores"
+
+---
+
+#### Tab 5: 📦 Artifacts
+**Purpose:** Browse and inspect raw data files
+
+**Components:**
+- File browser for artifacts:
+  - fetch_hacs_integrations-result.json (1.4 MB)
+  - search_github_repos-result.json (134 KB)
+  - search_youtube_videos-result.json (30 KB)
+- File metadata (size, timestamp, source connector)
+- JSON preview with syntax highlighting (Monaco Editor)
+- Download button
+- "Re-analyze" button to run analysis on selected artifacts
+
+**Demo Value:** "Here's the raw data we collected from 3 APIs"
+
+---
+
+### Demo Narrative Flow (5-10 minutes)
+
+**The UI tells this story:**
+
+1. **System Overview** → "Here's our architecture with 6 services running"
+2. **Workflow Execution** → "Let's execute the Home Assistant workflow"
+3. **Artifacts** → "Here's the data we collected from 3 APIs"
+4. **Data Pipeline** → "Here's how we transform raw data to normalized schema"
+5. **Results** → "Here are the top 20 opportunities with scores"
+
+**Result:** Complete understanding of the platform in 10 minutes
+
+---
+
+### Tech Stack
+
+**Frontend:**
 - **Framework:** React 18 + TypeScript
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS
-- **HTTP Client:** Native `fetch` (no Axios needed)
+- **Routing:** React Router (for tab navigation)
+- **State Management:** Zustand (lightweight, simple)
+- **HTTP Client:** Native `fetch` with custom wrapper
 
-**What we're NOT using for MVP:**
-- ~~React Query~~ → Simple `useState` + `useEffect`
-- ~~React Router~~ → Single page app, no routing needed
-- ~~Recharts~~ → Charts are future enhancement
-- ~~Axios~~ → Native `fetch` is sufficient
+**Visualization Libraries:**
+- **Workflow DAG:** React Flow (workflow visualization)
+- **Code Editor:** Monaco Editor (VS Code editor component)
+- **Charts:** Recharts (scoring breakdown)
+- **Icons:** Lucide React (consistent icon set)
+- **Syntax Highlighting:** Prism.js or Shiki
+
+**Real-time Updates:**
+- **Polling:** Every 2 seconds during active execution
+- **Future:** WebSocket for true real-time
 
 **Backend (Rust):**
 - **Framework:** Axum (Rust async web framework)
@@ -394,18 +501,54 @@ CREATE TABLE opportunities (
 
 ### API Endpoints
 
+#### Existing Endpoints (Already Built)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/niches` | List available niches |
-| POST | `/api/analyze` | Run one-off analysis |
-| GET | `/api/opportunities` | Get opportunities (filtered by run_id, niche) |
-| GET | `/api/schedules` | List all scheduled jobs |
-| POST | `/api/schedules` | Create new schedule |
-| PUT | `/api/schedules/:id` | Update schedule |
-| DELETE | `/api/schedules/:id` | Delete schedule |
-| GET | `/api/runs` | Get job run history |
-| GET | `/api/runs/:id` | Get specific run details |
-| GET | `/api/reports/:id` | Download report (Markdown/JSON) |
+| GET | `/health` | Health check |
+| GET | `/api/opportunities` | Get top opportunities |
+| POST | `/api/analyze` | Trigger analysis |
+
+#### New Endpoints Required for Platform Demo Console
+
+**System Overview:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/system/status` | Health of all services (peg-engine, credential-vault, etc.) |
+| GET | `/api/system/stats` | Overall statistics (workflows run, artifacts stored) |
+| GET | `/api/system/architecture` | Architecture metadata for diagram |
+
+**Workflow Execution:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/workflows` | List available workflows |
+| GET | `/api/workflows/:id` | Get workflow definition (YAML/JSON) |
+| POST | `/api/workflows/:id/execute` | Trigger workflow execution |
+| GET | `/api/executions` | List execution history |
+| GET | `/api/executions/:id` | Get execution details |
+| GET | `/api/executions/:id/logs` | Get execution logs (streaming) |
+| GET | `/api/executions/:id/status` | Get real-time status |
+
+**Data Pipeline:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/transform/preview` | Show transformation for sample data |
+| GET | `/api/schemas` | List UDM schemas |
+| GET | `/api/schemas/:name` | Get schema definition |
+
+**Artifacts:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/artifacts` | List all artifacts |
+| GET | `/api/artifacts/:id` | Get artifact content |
+| GET | `/api/artifacts/:id/preview` | Get preview (first 100 lines) |
+| GET | `/api/artifacts/:id/metadata` | Get metadata (size, timestamp, source) |
+
+**Connectors:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/connectors` | List all connectors |
+| GET | `/api/connectors/:id` | Get connector configuration |
+| GET | `/api/connectors/:id/schema` | Get connector output schema |
 
 ---
 
@@ -724,38 +867,66 @@ Top 5 Opportunities:
 
 ### Future Enhancements (Post-MVP)
 
-**Phase 2: UDM Normalization & Data Analysis** 🔄 IN PROGRESS
-- [x] **Fix artifact storage in peg-engine** (2025-12-12)
+**Phase 2: UDM Normalization & Data Analysis** ✅ COMPLETE (2025-12-12)
+- [x] **Fix artifact storage in peg-engine**
   - Modified `deps/peg-engine/src/core/worker.ts` to auto-create artifacts from connector results
   - Artifacts now stored before output mapping is applied
   - New execution ID: `309a8a02-293e-4bde-ae6b-d0df6d52844d` with 3 artifacts
-- [x] **Extract workflow execution results** (2025-12-12)
+- [x] **Extract workflow execution results**
   - Downloaded HACS integrations (1.4 MB, ~2,000+ integrations)
   - Downloaded GitHub repositories (134 KB, 20 repos)
   - Downloaded YouTube videos (30 KB, 20 videos)
   - Saved to `data/raw/` directory
-- [ ] Setup UDM-single service for data normalization
-- [ ] Define canonical schemas for Home Assistant integration data
-- [ ] Transform raw API responses into UDM format
-- [ ] Implement opportunity scoring algorithm
-- [ ] Store normalized data in ChromaDB/PostgreSQL
-- [ ] Generate analysis reports with rankings and metrics
-- [ ] Validate data quality and completeness
+- [x] **Transform raw API responses into UDM format**
+  - Created `transform.rs` module to parse and normalize HACS, GitHub, YouTube data
+  - Implemented domain extraction, GitHub stats parsing, YouTube mention counting
+- [x] **Implement opportunity scoring algorithm**
+  - Created `analysis.rs` module with demand-supply gap methodology
+  - Scoring components: Demand (40%), Feasibility (30%), Competition (20%), Trend (10%)
+  - Successfully analyzed 1,889 candidates in 0.09 seconds
+- [x] **Generate analysis reports with rankings and metrics**
+  - Created CLI tool (`analyze.rs`) for running analysis
+  - Generated Markdown report with top 20 opportunities
+  - Top opportunity: Xiaomi Home (Score: 83.6/100)
+- [x] **Validate data quality and completeness**
+  - End-to-end validation: PEG → Connectors → Artifacts → Transform → Analysis → Report
+  - All 3 data sources successfully integrated
 
-**Phase 3: Additional Niches**
-- [ ] Developer Tools niche (GitHub + Stack Overflow + npm)
-- [ ] SaaS Integration Marketplace niche (Zapier, Make, n8n)
-- [ ] Content Creator niche (Reddit + News API + Hacker News)
-- [ ] Custom niche builder (user-defined configurations)
+**Phase 3: Platform Demo Console** 🔄 IN PROGRESS
+- [ ] **Build React + TypeScript UI** (12-day timeline)
+  - See `UI_STRATEGY.md`, `UI_MOCKUP.md`, `UI_IMPLEMENTATION_PLAN.md` for details
+  - 5 core tabs: System Overview, Workflow Execution, Data Pipeline, Results, Artifacts
+  - Purpose: Demonstrate end-to-end UDM + PEG + Connector ecosystem
+- [ ] **Extend backend API** with new endpoints
+  - System status, workflow execution, artifact browsing, connector management
+  - Real-time execution logs and status updates
+- [ ] **Create demo narrative** (5-10 minute presentation flow)
+- [ ] **Test end-to-end demo** with stakeholders
 
-**Phase 4: Advanced Features**
-- [ ] Web UI for non-technical users
+**Phase 4: Additional Niches & Data Sources** 📋 PLANNED
+- [ ] **Add more niches:**
+  - Developer Tools niche (GitHub + Stack Overflow + npm)
+  - SaaS Integration Marketplace niche (Zapier, Make, n8n)
+  - Content Creator niche (Reddit + News API + Hacker News)
+  - Custom niche builder (user-defined configurations)
+- [ ] **Add more data sources to existing niches:**
+  - Home Assistant: Add Reddit, Discord, Home Assistant forums
+  - Enrichment: Add sentiment analysis, trend detection
+  - Social signals: Twitter/X mentions, blog posts
+- [ ] **UI for managing niches and data sources:**
+  - Visual niche builder (drag-and-drop data sources)
+  - Connector marketplace (browse and add connectors)
+  - Data source configuration UI
+  - Preview and test new niches before deployment
+
+**Phase 5: Advanced Features**
 - [ ] Automated monitoring and alerts
 - [ ] Historical trend tracking and visualization
 - [ ] Collaborative opportunity scoring
 - [ ] Integration with project management tools
+- [ ] Multi-user support with authentication
 
-**Phase 5: Natural Language Interface**
+**Phase 6: Natural Language Interface**
 - [ ] Conversational query interface
 - [ ] "Show me trending Home Assistant integration requests from this week"
 - [ ] "Compare Govee vs Philips Hue integration opportunities"
@@ -865,7 +1036,17 @@ Structured output can feed AI tools for enhanced qualitative insights, combining
 **Version History:**
 - v1.0 (2025-12-11): Initial PRD with local business niche use case
 - v2.0 (2025-12-11): Pivot to Home Assistant integrations, multi-niche architecture, AI complementarity
+- v3.0 (2025-12-12): Updated UI section to Platform Demo Console approach
+  - Changed from business dashboard to technical demonstration tool
+  - Added 5 core tabs: System Overview, Workflow Execution, Data Pipeline, Results, Artifacts
+  - Expanded API endpoints for platform demonstration
+  - Added Phase 4 for additional niches and data sources with UI management
+  - Marked Phase 2 (UDM Normalization & Data Analysis) as complete
 
 ---
 
-**For implementation details and progress tracking, see CONVERSATION_HANDOFF.md**
+**For implementation details and progress tracking, see:**
+- `PHASE_2_COMPLETE.md` - Phase 2 completion summary
+- `UI_STRATEGY.md` - Platform Demo Console strategy
+- `UI_MOCKUP.md` - Visual mockups of all 5 tabs
+- `UI_IMPLEMENTATION_PLAN.md` - 12-day implementation roadmap
