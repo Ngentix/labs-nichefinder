@@ -26,6 +26,12 @@ Thumbs.db
 
 # External dependencies (cloned repos)
 /deps/PEG-Connector-Service/
+/deps/PEG-Executor-Service/
+/deps/credential-vault/
+/deps/peg-engine/
 
 # Logs
 *.log
+
+# Scripts from manual testing (deprecated)
+execute-workflow-via-udm.sh
