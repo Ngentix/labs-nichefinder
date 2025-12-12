@@ -292,26 +292,189 @@ impl DataCollector for GitHubCollector {
     }
 }
 
-/// Reddit data collector (placeholder for now)
+/// Reddit API response for OAuth token
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct RedditOAuthResponse {
+    access_token: String,
+    token_type: String,
+    expires_in: u64,
+    scope: String,
+}
+
+/// Reddit post data
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RedditPost {
+    pub id: String,
+    pub title: String,
+    pub author: String,
+    pub subreddit: String,
+    pub score: i64,
+    pub num_comments: u64,
+    pub created_utc: f64,
+    pub url: String,
+    pub selftext: String,
+    #[serde(default)]
+    pub link_flair_text: Option<String>,
+    #[serde(default)]
+    pub upvote_ratio: Option<f64>,
+}
+
+/// Reddit listing response (contains posts)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RedditListing {
+    pub kind: String,
+    pub data: RedditListingData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RedditListingData {
+    pub children: Vec<RedditChild>,
+    pub after: Option<String>,
+    pub before: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RedditChild {
+    pub kind: String,
+    pub data: RedditPost,
+}
+
+/// Reddit collector for fetching posts and discussions
 pub struct RedditCollector {
-    // TODO: Implement Reddit API connector
+    connector: RestApiConnector,
 }
 
 impl RedditCollector {
-    pub async fn new() -> Result<Self> {
-        Ok(Self {})
+    /// Create a new Reddit collector with OAuth2 authentication
+    /// Requires client_id and client_secret from Reddit app registration
+    pub async fn new(client_id: Option<String>, client_secret: Option<String>) -> Result<Self> {
+        let mut config = RestApiConfig::default();
+        config.base_url = "https://oauth.reddit.com".to_string();
+        config.timeout_seconds = 30;
+
+        // If credentials provided, authenticate and get access token
+        if let (Some(client_id), Some(client_secret)) = (client_id, client_secret) {
+            let access_token = Self::authenticate(&client_id, &client_secret).await?;
+
+            config.default_headers.insert(
+                "Authorization".to_string(),
+                format!("Bearer {}", access_token),
+            );
+        }
+
+        // Reddit API requires User-Agent header
+        config.default_headers.insert(
+            "User-Agent".to_string(),
+            "NicheFinder/0.1.0 (by /u/nichefinder)".to_string(),
+        );
+
+        let connector = RestApiConnector::with_config(config)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        Ok(Self { connector })
+    }
+
+    /// Authenticate with Reddit OAuth2 and get access token
+    async fn authenticate(client_id: &str, client_secret: &str) -> Result<String> {
+        use base64::Engine;
+
+        // Create basic auth header
+        let credentials = format!("{}:{}", client_id, client_secret);
+        let encoded = base64::engine::general_purpose::STANDARD.encode(credentials.as_bytes());
+
+        // Create a temporary connector for authentication
+        let mut auth_config = RestApiConfig::default();
+        auth_config.base_url = "https://www.reddit.com".to_string();
+        auth_config.default_headers.insert(
+            "Authorization".to_string(),
+            format!("Basic {}", encoded),
+        );
+        auth_config.default_headers.insert(
+            "User-Agent".to_string(),
+            "NicheFinder/0.1.0".to_string(),
+        );
+
+        let auth_connector = RestApiConnector::with_config(auth_config)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        // Request access token
+        let body = serde_json::json!({
+            "grant_type": "client_credentials"
+        });
+
+        let response = auth_connector.post("/api/v1/access_token", body, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let oauth_response: RedditOAuthResponse = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        Ok(oauth_response.access_token)
+    }
+
+    /// Search for posts across Reddit
+    pub async fn search(&self, query: &str, limit: u32) -> Result<Vec<RedditPost>> {
+        let encoded_query = urlencoding::encode(query);
+        let path = format!("/search?q={}&limit={}&sort=relevance&t=month", encoded_query, limit);
+
+        let response = self.connector.get(&path, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let listing: RedditListing = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        let posts = listing.data.children
+            .into_iter()
+            .map(|child| child.data)
+            .collect();
+
+        Ok(posts)
+    }
+
+    /// Fetch posts from a specific subreddit
+    pub async fn fetch_subreddit_posts(&self, subreddit: &str, sort: &str, limit: u32) -> Result<Vec<RedditPost>> {
+        let path = format!("/r/{}/{}?limit={}", subreddit, sort, limit);
+
+        let response = self.connector.get(&path, None)
+            .await
+            .map_err(|e| Error::Udm(udm_core::UdmError::Generic(e.to_string())))?;
+
+        let listing: RedditListing = serde_json::from_value(response)
+            .map_err(|e| Error::Serialization(e))?;
+
+        let posts = listing.data.children
+            .into_iter()
+            .map(|child| child.data)
+            .collect();
+
+        Ok(posts)
     }
 }
 
 #[async_trait]
 impl DataCollector for RedditCollector {
     async fn collect(&self) -> Result<Vec<CollectedData>> {
-        // TODO: Implement Reddit data collection
-        Ok(vec![])
+        // Collect posts from r/homeassistant about integrations
+        let posts = self.search("homeassistant integration", 100).await?;
+
+        let collected_data = posts
+            .into_iter()
+            .map(|post| CollectedData {
+                source: "reddit".to_string(),
+                data_type: "post".to_string(),
+                raw_data: serde_json::to_value(&post).unwrap_or_default(),
+                collected_at: chrono::Utc::now(),
+            })
+            .collect();
+
+        Ok(collected_data)
     }
-    
+
     fn source_name(&self) -> &str {
-        "Reddit"
+        "reddit"
     }
 }
 

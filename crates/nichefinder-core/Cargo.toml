@@ -33,6 +33,7 @@ uuid.workspace = true
 regex.workspace = true
 url.workspace = true
 urlencoding = "2.1"
+base64 = "0.22"
 
 # Statistics and scoring
 ndarray.workspace = true
