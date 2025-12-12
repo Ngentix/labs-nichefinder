@@ -7,6 +7,7 @@ pub mod error;
 pub mod types;
 pub mod scoring;
 pub mod reporting;
+pub mod collectors;
 
 // Re-export commonly used types
 pub use error::{Error, Result};
