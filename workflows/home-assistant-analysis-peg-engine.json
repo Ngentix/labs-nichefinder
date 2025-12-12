@@ -1,0 +1,97 @@
+{
+  "name": "Home Assistant Niche Discovery Analysis",
+  "description": "Multi-source data collection workflow for discovering underserved Home Assistant integration opportunities",
+  "metadata": {
+    "connector_version": "2.0.0",
+    "created_by": "nichefinder",
+    "tags": [
+      "home-assistant",
+      "niche-discovery",
+      "multi-source",
+      "market-intelligence"
+    ],
+    "data_sources": [
+      "hacs",
+      "github",
+      "youtube"
+    ],
+    "analysis_type": "integration_opportunities"
+  },
+  "actors": [
+    {
+      "id": "hacs_actor",
+      "name": "HACS Connector",
+      "kind": "Connector",
+      "config": {
+        "connector_id": "hacs"
+      }
+    },
+    {
+      "id": "github_actor",
+      "name": "GitHub Connector",
+      "kind": "Connector",
+      "config": {
+        "connector_id": "github"
+      }
+    },
+    {
+      "id": "youtube_actor",
+      "name": "YouTube Connector",
+      "kind": "Connector",
+      "config": {
+        "connector_id": "youtube"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "fetch_hacs_integrations",
+      "name": "Fetch HACS Integrations",
+      "verb": "fetch_integrations",
+      "actor": "hacs_actor",
+      "inputs": {},
+      "outputs": {
+        "integrations": "integrations"
+      },
+      "when": "auto"
+    },
+    {
+      "id": "search_github_repos",
+      "name": "Search GitHub Repositories",
+      "verb": "search_repositories",
+      "actor": "github_actor",
+      "inputs": {
+        "query": "home assistant integration",
+        "sort": "stars",
+        "order": "desc",
+        "per_page": 20
+      },
+      "outputs": {
+        "repositories": "repositories"
+      },
+      "dependencies": [
+        "fetch_hacs_integrations"
+      ],
+      "when": "auto"
+    },
+    {
+      "id": "search_youtube_videos",
+      "name": "Search YouTube Videos",
+      "verb": "search_videos",
+      "actor": "youtube_actor",
+      "inputs": {
+        "query": "home assistant",
+        "max_results": 20,
+        "part": "snippet",
+        "order": "viewCount"
+      },
+      "outputs": {
+        "videos": "videos"
+      },
+      "dependencies": [
+        "fetch_hacs_integrations"
+      ],
+      "when": "auto"
+    }
+  ]
+}
