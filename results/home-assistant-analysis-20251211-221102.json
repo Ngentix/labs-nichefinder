@@ -1,0 +1,50 @@
+{
+  "workflow_id": "home-assistant-niche-analysis",
+  "execution_date": "2025-12-12 06:11:02",
+  "data_sources": {
+    "hacs": {
+      "integration_count": 0,
+      "sample": null
+    },
+    "github": {
+      "repository_count": 20,
+      "sample": [
+        {
+          "name": "ha_xiaomi_home",
+          "stars": null,
+          "description": "Xiaomi Home Integration for Home Assistant"
+        },
+        {
+          "name": "hacs_waste_collection_schedule",
+          "stars": null,
+          "description": "Home Assistant integration framework for (garbage collection) schedules"
+        },
+        {
+          "name": "frigate-hass-integration",
+          "stars": null,
+          "description": "Frigate integration for Home Assistant"
+        }
+      ]
+    },
+    "youtube": {
+      "video_count": 26,
+      "sample": [
+        {
+          "title": "My Wife Hates our Smart House",
+          "channel": "Linus Tech Tips"
+        },
+        {
+          "title": "I Tried Building the PERFECT Smart Home: What I Learned (Mistakes Included)",
+          "channel": "Jimmy Tries World"
+        },
+        {
+          "title": "Extremely Useful NFC Home Automation Ideas!",
+          "channel": "Smart Home Solver"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_data_points": 46
+  }
+}
