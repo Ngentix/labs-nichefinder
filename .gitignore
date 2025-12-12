@@ -23,6 +23,10 @@ Thumbs.db
 /connectors/*.yaml
 /workflows/*.yaml
 /generated_connectors/
+*.db
+/data/*.json
+/web-ui/node_modules/
+/web-ui/dist/
 
 # External dependencies (cloned repos)
 /deps/PEG-Connector-Service/
