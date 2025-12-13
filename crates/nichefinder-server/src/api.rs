@@ -727,7 +727,10 @@ async fn execute_workflow(
     let response = client
         .post(&url)
         .json(&serde_json::json!({
-            "context": {}
+            "context": {
+                "user_id": "demo-user",
+                "environment": "prod"
+            }
         }))
         .send()
         .await
