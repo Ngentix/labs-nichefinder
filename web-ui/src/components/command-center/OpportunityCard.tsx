@@ -139,7 +139,7 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
           </span>
         </div>
         {/* Product Description - Under heading */}
-        <p className="text-xs leading-relaxed text-gray-300 font-light pl-9">
+        <p className="text-sm leading-relaxed text-gray-300 font-light pl-9">
           {summary}
         </p>
       </div>
