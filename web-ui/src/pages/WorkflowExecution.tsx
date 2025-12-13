@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { AlertTriangle, XCircle } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { ServiceCallTrace } from '../components/trace/ServiceCallTrace';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
@@ -131,6 +132,40 @@ export function WorkflowExecution() {
           </div>
         </dl>
       </div>
+
+      {/* Job Errors */}
+      {execution.jobs && execution.jobs.some((job: any) => job.error) && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <XCircle className="w-5 h-5 text-red-600" />
+            <h3 className="text-lg font-semibold text-red-800">Execution Errors</h3>
+          </div>
+          <div className="space-y-4">
+            {execution.jobs
+              .filter((job: any) => job.error)
+              .map((job: any) => (
+                <div key={job.id} className="bg-white border border-red-100 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-red-800">
+                        Step: {job.stepId}
+                      </p>
+                      <p className="mt-1 text-sm text-red-700 font-mono break-all whitespace-pre-wrap">
+                        {job.error}
+                      </p>
+                      {job.endTime && (
+                        <p className="mt-2 text-xs text-red-500">
+                          Failed at: {new Date(job.endTime).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Execution Logs */}
       {execution.logs && execution.logs.length > 0 && (
