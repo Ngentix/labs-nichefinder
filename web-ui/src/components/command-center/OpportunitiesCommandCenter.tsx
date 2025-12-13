@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { KpiCard } from './KpiCard';
-import { OpportunityCard } from './OpportunityCard';
+import { CardsView } from './CardsView';
+import { SignalLanesView } from './SignalLanesView';
+import { MatrixView } from './MatrixView';
 import { InsightFeed } from './InsightFeed';
 import { calculateKPIs, generateInsights } from '../../utils/opportunityHelpers';
-import { Table } from 'lucide-react';
+import { Table, LayoutGrid, List, Grid3x3 } from 'lucide-react';
+
+type LayoutMode = 'cards' | 'lanes' | 'matrix';
 
 interface DataSource {
   name: string;
@@ -48,9 +53,9 @@ export function OpportunitiesCommandCenter({
   onExploreOpportunity,
   onOpenResearchExplorer,
 }: OpportunitiesCommandCenterProps) {
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('cards');
   const kpis = calculateKPIs(opportunities);
   const insights = generateInsights(opportunities);
-  const topOpportunities = opportunities.slice(0, 9); // Show top 9 cards
 
   return (
     <div className="space-y-10 pb-12">
@@ -64,13 +69,52 @@ export function OpportunitiesCommandCenter({
             Intelligence-driven opportunity discovery
           </p>
         </div>
-        <button
-          onClick={onOpenResearchExplorer}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800/80 border border-gray-700/50 hover:border-gray-600/50 text-gray-300 rounded transition-all duration-300 text-sm uppercase tracking-wide font-medium"
-        >
-          <Table className="w-3.5 h-3.5" />
-          Research Explorer
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Layout Toggle */}
+          <div className="flex items-center gap-1 bg-gray-900/60 border border-gray-800/50 rounded p-1">
+            <button
+              onClick={() => setLayoutMode('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs uppercase tracking-wide font-medium transition-all duration-200 ${layoutMode === 'cards'
+                ? 'bg-gray-700/80 text-gray-100'
+                : 'text-gray-500 hover:text-gray-300'
+                }`}
+              title="Cards View"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Cards</span>
+            </button>
+            <button
+              onClick={() => setLayoutMode('lanes')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs uppercase tracking-wide font-medium transition-all duration-200 ${layoutMode === 'lanes'
+                ? 'bg-gray-700/80 text-gray-100'
+                : 'text-gray-500 hover:text-gray-300'
+                }`}
+              title="Signal Lanes View"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>Lanes</span>
+            </button>
+            <button
+              onClick={() => setLayoutMode('matrix')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs uppercase tracking-wide font-medium transition-all duration-200 ${layoutMode === 'matrix'
+                ? 'bg-gray-700/80 text-gray-100'
+                : 'text-gray-500 hover:text-gray-300'
+                }`}
+              title="Matrix View"
+            >
+              <Grid3x3 className="w-3.5 h-3.5" />
+              <span>Matrix</span>
+            </button>
+          </div>
+
+          <button
+            onClick={onOpenResearchExplorer}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800/80 border border-gray-700/50 hover:border-gray-600/50 text-gray-300 rounded transition-all duration-300 text-sm uppercase tracking-wide font-medium"
+          >
+            <Table className="w-3.5 h-3.5" />
+            Research Explorer
+          </button>
+        </div>
       </div>
 
       {/* KPI Ribbon - System Activating */}
@@ -99,22 +143,29 @@ export function OpportunitiesCommandCenter({
         />
       </div>
 
-      {/* Opportunity Cards Grid - Panels */}
+      {/* Opportunity Views - Layout-Dependent */}
       <div>
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest mb-6">
           Top Opportunities
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {topOpportunities.map((opp, index) => (
-            <OpportunityCard
-              key={opp.id}
-              opportunity={opp}
-              rank={index + 1}
-              delay={450 + index * 60}
-              onExplore={() => onExploreOpportunity(opp)}
-            />
-          ))}
-        </div>
+        {layoutMode === 'cards' && (
+          <CardsView
+            opportunities={opportunities}
+            onExploreOpportunity={onExploreOpportunity}
+          />
+        )}
+        {layoutMode === 'lanes' && (
+          <SignalLanesView
+            opportunities={opportunities}
+            onExploreOpportunity={onExploreOpportunity}
+          />
+        )}
+        {layoutMode === 'matrix' && (
+          <MatrixView
+            opportunities={opportunities}
+            onExploreOpportunity={onExploreOpportunity}
+          />
+        )}
       </div>
 
       {/* Insight Feed */}

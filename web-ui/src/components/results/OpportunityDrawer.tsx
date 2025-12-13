@@ -47,6 +47,49 @@ interface OpportunityDrawerProps {
 
 type Tab = 'overview' | 'evidence' | 'actions';
 
+// Signal Meter Component - Large visual representation
+function SignalMeter({
+  label,
+  value,
+  color = 'gray',
+  inverse = false,
+  momentum
+}: {
+  label: string;
+  value: number;
+  color?: string;
+  inverse?: boolean;
+  momentum?: 'Rising' | 'Stable' | 'Fading';
+}) {
+  const displayValue = value;
+  const directionIcon = momentum === 'Rising' ? '↗' : momentum === 'Fading' ? '↘' : momentum === 'Stable' ? '→' : null;
+
+  return (
+    <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+      <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-3">
+        {label}
+      </div>
+      <div className="flex items-end justify-between mb-3">
+        <span className="text-2xl font-mono text-gray-100 font-bold">
+          {displayValue.toFixed(0)}
+        </span>
+        {directionIcon && (
+          <span className="text-lg text-gray-500 mb-1">{directionIcon}</span>
+        )}
+      </div>
+      <div className="h-2 bg-gray-900/80 rounded-sm overflow-hidden">
+        <div
+          className="h-full bg-gray-300 transition-all duration-700 ease-out"
+          style={{
+            width: `${displayValue}%`,
+            animation: `fillBar 0.7s ease-out forwards`
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
@@ -84,59 +127,72 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 w-full md:w-[600px] bg-white dark:bg-gray-800 shadow-2xl z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 bottom-0 w-full md:w-[700px] bg-gray-950 shadow-2xl z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 z-10">
-          <div className="flex items-start justify-between mb-4">
+        <div className="sticky top-0 bg-gray-950 border-b border-gray-800/50 p-6 z-10">
+          <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              <h2 className="text-3xl font-bold text-gray-100 mb-2 tracking-tight">
                 {opportunity.name}
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {opportunity.category}
+              <p className="text-sm text-gray-500 uppercase tracking-wide">
+                {opportunity.category.replace(/_/g, ' ')}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
               aria-label="Close drawer"
             >
-              <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
 
-          {/* Score and Signals */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-semibold">
-              Score: {opportunity.score.toFixed(1)}
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${signals.demand === 'High' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-                signals.demand === 'Med' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
-                  'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}>
-              Demand: {signals.demand}
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${signals.momentum === 'Rising' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-                signals.momentum === 'Stable' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
-                  'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}>
-              Momentum: {signals.momentum}
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${signals.buildability === 'Solo-friendly' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-                signals.buildability === 'Complex' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
-                  'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}>
-              Build: {signals.buildability}
-            </span>
+          {/* Signal Overview - Large Visual Representations */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <SignalMeter
+              label="Demand"
+              value={opportunity.scoring_details.demand}
+              color="gray"
+            />
+            <SignalMeter
+              label="Feasibility"
+              value={opportunity.scoring_details.feasibility}
+              color="gray"
+            />
+            <SignalMeter
+              label="Competition"
+              value={100 - opportunity.scoring_details.competition}
+              color="gray"
+              inverse
+            />
+            <SignalMeter
+              label="Trend"
+              value={opportunity.scoring_details.trend}
+              color="gray"
+              momentum={signals.momentum}
+            />
           </div>
 
-          {/* Summary */}
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+          {/* Composite Score - Prominent */}
+          <div className="bg-gray-900/60 border border-gray-800/50 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-widest text-gray-600 font-medium">
+                Composite Score
+              </span>
+              <span className="text-3xl font-mono text-gray-100 font-bold">
+                {opportunity.score.toFixed(1)}
+              </span>
+            </div>
+          </div>
+
+          {/* Product Summary */}
+          <p className="text-sm leading-relaxed text-gray-400 mb-6 border-l-2 border-gray-800/50 pl-4">
             {summary}
           </p>
 
           {/* Tabs */}
-          <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex gap-1 border-b border-gray-800/50">
             {[
               { id: 'overview' as Tab, label: 'Overview' },
               { id: 'evidence' as Tab, label: 'Evidence' },
@@ -145,9 +201,9 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                className={`px-4 py-2 text-xs uppercase tracking-wide font-medium border-b-2 transition-colors ${activeTab === tab.id
+                  ? 'border-gray-400 text-gray-100'
+                  : 'border-transparent text-gray-600 hover:text-gray-300'
                   }`}
               >
                 {tab.label}
@@ -188,64 +244,66 @@ interface OverviewTabProps {
 
 function OverviewTab({ questions, reasons, expandedQuestions, onToggleQuestion }: OverviewTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Why This Ranks Highly - Narrative Explanation */}
+      <div>
+        <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+          Why This Ranks Highly
+        </h3>
+        <div className="space-y-3">
+          {reasons.map((reason, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-3 text-sm text-gray-300 leading-relaxed bg-gray-900/40 border border-gray-800/50 rounded-lg p-4"
+            >
+              <span className="text-gray-600 font-mono text-xs mt-0.5">
+                {(index + 1).toString().padStart(2, '0')}
+              </span>
+              <span>{reason}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Builder Questions */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
           Builder Questions
         </h3>
         <div className="space-y-3">
           {questions.map((q, index) => (
             <div
               key={index}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+              className="border border-gray-800/50 rounded-lg overflow-hidden bg-gray-900/40"
             >
               <button
                 onClick={() => onToggleQuestion(index)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
               >
                 <div className="text-left flex-1">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                     {q.question}
                   </p>
-                  <p className="text-sm text-gray-900 dark:text-white font-semibold mt-1">
+                  <p className="text-sm text-gray-100 font-semibold">
                     {q.answer}
                   </p>
                 </div>
                 {expandedQuestions.has(index) ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
+                  <ChevronUp className="w-5 h-5 text-gray-600 flex-shrink-0 ml-2" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
+                  <ChevronDown className="w-5 h-5 text-gray-600 flex-shrink-0 ml-2" />
                 )}
               </button>
               {expandedQuestions.has(index) && (
-                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Why?</span> {q.why}
+                <div className="px-4 py-3 bg-gray-950/60 border-t border-gray-800/50">
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    <span className="font-medium text-gray-500">Why?</span> {q.why}
                   </p>
                 </div>
               )}
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Why This Ranks Highly */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Why This Ranks Highly
-        </h3>
-        <ul className="space-y-2">
-          {reasons.map((reason, index) => (
-            <li
-              key={index}
-              className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
-            >
-              <span className="text-blue-500 mt-1">•</span>
-              <span>{reason}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );
@@ -265,32 +323,69 @@ function EvidenceTab({ opportunity }: EvidenceTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Data Sources Summary - Visual Counts */}
+      <div className="grid grid-cols-3 gap-4">
+        {hacsSource && (
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              HACS
+            </div>
+            <div className="text-2xl font-mono text-gray-100 font-bold">
+              {hacsSource.data_points}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">data points</div>
+          </div>
+        )}
+        {githubSource && (
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              GitHub
+            </div>
+            <div className="text-2xl font-mono text-gray-100 font-bold">
+              {githubSource.metadata?.stars?.toLocaleString() || 'N/A'}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">stars</div>
+          </div>
+        )}
+        {youtubeSource && (
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              YouTube
+            </div>
+            <div className="text-2xl font-mono text-gray-100 font-bold">
+              {youtubeSource.data_points}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">videos</div>
+          </div>
+        )}
+      </div>
+
       {/* HACS Card */}
       {hacsSource && (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+        <div className="border border-gray-800/50 rounded-lg p-4 bg-gray-900/40">
+          <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
             HACS Integration
           </h3>
-          <dl className="space-y-2">
+          <dl className="space-y-3">
             {hacsSource.metadata?.domain && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Domain:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Domain:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {hacsSource.metadata.domain}
                 </dd>
               </div>
             )}
             {hacsSource.metadata?.downloads !== undefined && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Downloads:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Downloads:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {hacsSource.metadata.downloads.toLocaleString()}
                 </dd>
               </div>
             )}
             <div className="flex justify-between text-sm">
-              <dt className="text-gray-600 dark:text-gray-400">Data Points:</dt>
-              <dd className="text-gray-900 dark:text-white font-medium">
+              <dt className="text-gray-500">Data Points:</dt>
+              <dd className="text-gray-100 font-medium font-mono">
                 {hacsSource.data_points}
               </dd>
             </div>
@@ -300,39 +395,39 @@ function EvidenceTab({ opportunity }: EvidenceTabProps) {
 
       {/* GitHub Card */}
       {githubSource && (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+        <div className="border border-gray-800/50 rounded-lg p-4 bg-gray-900/40">
+          <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
             GitHub Repository
           </h3>
-          <dl className="space-y-2">
+          <dl className="space-y-3">
             {githubSource.metadata?.full_name && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Repository:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Repository:</dt>
+                <dd className="text-gray-100 font-medium font-mono text-xs">
                   {githubSource.metadata.full_name}
                 </dd>
               </div>
             )}
             {githubSource.metadata?.stars !== undefined && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Stars:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Stars:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {githubSource.metadata.stars.toLocaleString()}
                 </dd>
               </div>
             )}
             {githubSource.metadata?.forks !== undefined && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Forks:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Forks:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {githubSource.metadata.forks.toLocaleString()}
                 </dd>
               </div>
             )}
             {githubSource.metadata?.open_issues !== undefined && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Open Issues:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Open Issues:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {githubSource.metadata.open_issues}
                 </dd>
               </div>
@@ -343,27 +438,27 @@ function EvidenceTab({ opportunity }: EvidenceTabProps) {
 
       {/* YouTube Card */}
       {youtubeSource && (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+        <div className="border border-gray-800/50 rounded-lg p-4 bg-gray-900/40">
+          <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
             YouTube Mentions
           </h3>
-          <dl className="space-y-2">
+          <dl className="space-y-3">
             <div className="flex justify-between text-sm">
-              <dt className="text-gray-600 dark:text-gray-400">Videos Found:</dt>
-              <dd className="text-gray-900 dark:text-white font-medium">
+              <dt className="text-gray-500">Videos Found:</dt>
+              <dd className="text-gray-100 font-medium font-mono">
                 {youtubeSource.data_points}
               </dd>
             </div>
             {youtubeSource.metadata?.match_type && (
               <div className="flex justify-between text-sm">
-                <dt className="text-gray-600 dark:text-gray-400">Match Type:</dt>
-                <dd className="text-gray-900 dark:text-white font-medium">
+                <dt className="text-gray-500">Match Type:</dt>
+                <dd className="text-gray-100 font-medium font-mono">
                   {youtubeSource.metadata.match_type}
                 </dd>
               </div>
             )}
             {youtubeSource.metadata?.note && (
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              <div className="text-sm text-gray-400 mt-2 leading-relaxed">
                 {youtubeSource.metadata.note}
               </div>
             )}
@@ -419,28 +514,30 @@ function ActionsTab({ opportunity }: ActionsTabProps) {
   ];
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+    <div className="space-y-6">
+      <p className="text-sm text-gray-400 mb-6 leading-relaxed">
         Potential paths forward based on opportunity characteristics
       </p>
       {actions.map((action, index) => (
         <div
           key={index}
-          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+          className="border border-gray-800/50 rounded-lg p-5 bg-gray-900/40 hover:border-gray-700/50 transition-colors"
         >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-base font-semibold text-gray-100 mb-2 tracking-tight">
             {action.title}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          <p className="text-sm text-gray-400 mb-4 leading-relaxed">
             {action.description}
           </p>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {action.steps.map((step, stepIndex) => (
               <li
                 key={stepIndex}
-                className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
+                className="flex items-start gap-3 text-sm text-gray-300"
               >
-                <span className="text-blue-500 mt-1">{stepIndex + 1}.</span>
+                <span className="text-gray-600 font-mono text-xs mt-0.5">
+                  {(stepIndex + 1).toString().padStart(2, '0')}
+                </span>
                 <span>{step}</span>
               </li>
             ))}

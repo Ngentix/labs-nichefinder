@@ -48,8 +48,8 @@ function SignalBar({ value, label, inverse = false }: { value: number; label: st
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-widest text-gray-600 font-medium">{label}</span>
-        <span className="text-[9px] font-mono text-gray-500">{value.toFixed(0)}</span>
+        <span className="text-[9px] uppercase tracking-widest text-gray-400 font-medium">{label}</span>
+        <span className="text-[9px] font-mono text-gray-300">{value.toFixed(0)}</span>
       </div>
       <div className="h-1.5 bg-gray-900/80 rounded-sm overflow-hidden">
         <div
@@ -89,8 +89,8 @@ function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising'
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-widest text-gray-600 font-medium">Trend</span>
-        <span className="text-[10px] text-gray-500">{directionIcon}</span>
+        <span className="text-[9px] uppercase tracking-widest text-gray-400 font-medium">Trend</span>
+        <span className="text-[10px] text-gray-300">{directionIcon}</span>
       </div>
       <svg viewBox="0 0 100 24" className="w-full h-6" preserveAspectRatio="none">
         <path
@@ -127,14 +127,14 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
       <div className="px-4 py-3 border-b border-gray-800/50 relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono text-gray-600 tracking-wider">
+            <span className="text-[10px] font-mono text-gray-400 tracking-wider">
               #{rank.toString().padStart(2, '0')}
             </span>
             <h3 className="text-sm font-bold text-gray-100 tracking-tight">
               {opportunity.name}
             </h3>
           </div>
-          <span className="text-sm font-mono text-gray-400 font-bold">
+          <span className="text-sm font-mono text-gray-200 font-bold">
             {opportunity.score.toFixed(1)}
           </span>
         </div>
@@ -157,7 +157,7 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
 
       {/* Product Description - Small, Secondary */}
       <div className="px-4 py-3 border-t border-gray-800/50 relative">
-        <p className="text-[11px] leading-relaxed text-gray-500 font-light">
+        <p className="text-[11px] leading-relaxed text-gray-300 font-light">
           {summary}
         </p>
       </div>
