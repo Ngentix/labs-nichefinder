@@ -295,11 +295,32 @@ struct ExecutionResponse {
 /// Get all executions
 async fn get_executions(
     State(_state): State<Arc<AppState>>,
-) -> Result<Json<ExecutionsResponse>, AppError> {
-    // TODO: Load executions from database
-    Ok(Json(ExecutionsResponse {
-        executions: vec![],
-    }))
+) -> Result<Json<serde_json::Value>, AppError> {
+    // Proxy to peg-engine to get executions
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    let url = format!("{}/api/v1/executions", peg_engine_url);
+
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch executions from peg-engine: {}", e)))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(AppError(anyhow::anyhow!("peg-engine returned error {}: {}", status, error_text)));
+    }
+
+    let executions_data = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse executions response: {}", e)))?;
+
+    Ok(Json(executions_data))
 }
 
 #[derive(Debug, Serialize)]

@@ -13,11 +13,29 @@ export function WorkflowExecution() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchExecution = async () => {
-    if (!id) return;
-
     try {
-      const data = await apiClient.getExecution(id);
-      setExecution(data.execution);
+      if (id) {
+        // Fetch specific execution by ID
+        const data = await apiClient.getExecution(id);
+        setExecution(data.execution);
+      } else {
+        // Fetch latest execution
+        const data = await apiClient.getExecutions();
+        const executions = data.executions || [];
+
+        if (executions.length === 0) {
+          setError('No executions found. Execute a workflow to see results.');
+          setLoading(false);
+          return;
+        }
+
+        // Sort by started_at descending to get the latest
+        const sortedExecutions = executions.sort((a: any, b: any) =>
+          new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
+        );
+
+        setExecution(sortedExecutions[0]);
+      }
       setError(null);
     } catch (err) {
       console.error('Failed to fetch execution:', err);
@@ -123,8 +141,8 @@ export function WorkflowExecution() {
               <div key={index} className="flex items-start gap-3 text-sm">
                 <span className="text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
                 <span className={`font-semibold ${log.level === 'error' ? 'text-red-600' :
-                    log.level === 'warn' ? 'text-yellow-600' :
-                      'text-blue-600'
+                  log.level === 'warn' ? 'text-yellow-600' :
+                    'text-blue-600'
                   }`}>
                   {log.level.toUpperCase()}
                 </span>
@@ -136,9 +154,9 @@ export function WorkflowExecution() {
       )}
 
       {/* Service Call Trace */}
-      {id && (
+      {execution?.id && (
         <div className="bg-white rounded-lg shadow p-6">
-          <ServiceCallTrace executionId={id} isExecutionRunning={isRunning} />
+          <ServiceCallTrace executionId={execution.id} isExecutionRunning={isRunning} />
         </div>
       )}
     </div>
