@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '../../api/client';
 import { ExecutionTrace, TraceEntry as TraceEntryType } from '../../types/api';
 import { TraceEntry } from './TraceEntry';
+import { AggregatedServiceCall } from './AggregatedServiceCall';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { ErrorMessage } from '../shared/ErrorMessage';
 import { Activity } from 'lucide-react';
@@ -13,6 +14,7 @@ interface ServiceCallTraceProps {
 
 export function ServiceCallTrace({ executionId, isExecutionRunning }: ServiceCallTraceProps) {
   const [trace, setTrace] = useState<ExecutionTrace | null>(null);
+  const [serviceCalls, setServiceCalls] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,8 +31,19 @@ export function ServiceCallTrace({ executionId, isExecutionRunning }: ServiceCal
     }
   };
 
+  const fetchServiceCalls = async () => {
+    try {
+      const data = await apiClient.getExecutionServiceCalls(executionId);
+      setServiceCalls(data);
+    } catch (err) {
+      console.error('Failed to fetch service calls:', err);
+      // Don't set error state - service calls are optional
+    }
+  };
+
   useEffect(() => {
     fetchTrace();
+    fetchServiceCalls();
   }, [executionId]);
 
   // Poll for updates while execution is running
@@ -39,6 +52,7 @@ export function ServiceCallTrace({ executionId, isExecutionRunning }: ServiceCal
 
     const interval = setInterval(() => {
       fetchTrace();
+      fetchServiceCalls();
     }, 500); // Poll every 500ms
 
     return () => clearInterval(interval);
@@ -76,6 +90,8 @@ export function ServiceCallTrace({ executionId, isExecutionRunning }: ServiceCal
     );
   }
 
+  const totalCalls = trace.traces.length + (serviceCalls?.aggregated_calls?.length || 0);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,12 +105,24 @@ export function ServiceCallTrace({ executionId, isExecutionRunning }: ServiceCal
             </span>
           )}
           <span className="text-sm text-gray-500">
-            {trace.traces.length} call{trace.traces.length !== 1 ? 's' : ''}
+            {totalCalls} interaction{totalCalls !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
-      {/* Traces grouped by step */}
+      {/* Aggregated Service Calls from nichefinder-server */}
+      {serviceCalls?.aggregated_calls && serviceCalls.aggregated_calls.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1">
+            nichefinder-server → peg-engine
+          </h4>
+          {serviceCalls.aggregated_calls.map((agg: any, idx: number) => (
+            <AggregatedServiceCall key={idx} aggregated={agg} />
+          ))}
+        </div>
+      )}
+
+      {/* Traces grouped by step from peg-engine */}
       {Object.entries(groupedTraces).map(([stepId, traces]) => (
         <div key={stepId} className="space-y-2">
           <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-1">

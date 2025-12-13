@@ -9,19 +9,38 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 use std::time::Instant;
 use tower_http::cors::{Any, CorsLayer};
+
+/// Service call record for tracking HTTP calls
+#[derive(Debug, Clone, Serialize)]
+pub struct ServiceCall {
+    pub timestamp: String,
+    pub execution_id: Option<String>,
+    pub service_from: String,
+    pub service_to: String,
+    pub method: String,
+    pub url: String,
+    pub status: u16,
+    pub duration_ms: u64,
+    pub artifact_id: Option<String>,
+}
 
 /// Application state
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: SqlitePool,
+    pub service_calls: Arc<RwLock<Vec<ServiceCall>>>,
 }
 
 /// Create the API router
 pub fn create_router(db_pool: SqlitePool) -> Router {
-    let state = Arc::new(AppState { db_pool });
+    let state = Arc::new(AppState {
+        db_pool,
+        service_calls: Arc::new(RwLock::new(Vec::new())),
+    });
 
     // Configure CORS for local development
     let cors = CorsLayer::new()
@@ -43,6 +62,7 @@ pub fn create_router(db_pool: SqlitePool) -> Router {
         .route("/api/executions", get(get_executions))
         .route("/api/executions/{id}", get(get_execution))
         .route("/api/executions/{id}/trace", get(get_execution_trace))
+        .route("/api/executions/{id}/service-calls", get(get_service_calls))
         // Artifact endpoints
         .route("/api/artifacts", get(get_artifacts))
         .route("/api/artifacts/{id}", get(get_artifact))
@@ -50,6 +70,39 @@ pub fn create_router(db_pool: SqlitePool) -> Router {
         .route("/api/connectors", get(get_connectors))
         .layer(cors)
         .with_state(state)
+}
+
+/// Helper function to record a service call
+fn record_service_call(
+    state: &Arc<AppState>,
+    execution_id: Option<String>,
+    service_from: &str,
+    service_to: &str,
+    method: &str,
+    url: &str,
+    status: u16,
+    duration_ms: u64,
+    artifact_id: Option<String>,
+) {
+    let call = ServiceCall {
+        timestamp: chrono::Utc::now().to_rfc3339(),
+        execution_id,
+        service_from: service_from.to_string(),
+        service_to: service_to.to_string(),
+        method: method.to_string(),
+        url: url.to_string(),
+        status,
+        duration_ms,
+        artifact_id,
+    };
+
+    if let Ok(mut calls) = state.service_calls.write() {
+        // Keep only the last 1000 calls to prevent unbounded growth
+        if calls.len() >= 1000 {
+            calls.remove(0);
+        }
+        calls.push(call);
+    }
 }
 
 /// Health check endpoint
@@ -119,7 +172,7 @@ async fn trigger_analysis(
         .map_err(|e| anyhow::anyhow!("Failed to fetch artifacts: {}", e))?;
 
     let status = response.status().as_u16();
-    let duration_ms = start.elapsed().as_millis();
+    let duration_ms = start.elapsed().as_millis() as u64;
 
     tracing::info!(
         service_call = true,
@@ -128,8 +181,21 @@ async fn trigger_analysis(
         method = "GET",
         url = %artifacts_url,
         status = status,
-        duration_ms = duration_ms as u64,
+        duration_ms = duration_ms,
         "Fetching artifacts from peg-engine"
+    );
+
+    // Record service call
+    record_service_call(
+        &state,
+        Some(request.execution_id.clone()),
+        "nichefinder-server",
+        "peg-engine",
+        "GET",
+        &artifacts_url,
+        status,
+        duration_ms,
+        None,
     );
 
     let artifacts: Vec<ArtifactMetadata> = response
@@ -161,9 +227,9 @@ async fn trigger_analysis(
     let github_path = temp_dir.join(format!("github_{}.json", request.execution_id));
     let youtube_path = temp_dir.join(format!("youtube_{}.json", request.execution_id));
 
-    download_artifact(&client, &peg_engine_url, &hacs_artifact.id, &hacs_path).await?;
-    download_artifact(&client, &peg_engine_url, &github_artifact.id, &github_path).await?;
-    download_artifact(&client, &peg_engine_url, &youtube_artifact.id, &youtube_path).await?;
+    download_artifact(&state, &client, &peg_engine_url, &request.execution_id, &hacs_artifact.id, &hacs_path).await?;
+    download_artifact(&state, &client, &peg_engine_url, &request.execution_id, &github_artifact.id, &github_path).await?;
+    download_artifact(&state, &client, &peg_engine_url, &request.execution_id, &youtube_artifact.id, &youtube_path).await?;
 
     tracing::info!("Downloaded all artifacts to temp directory");
 
@@ -209,8 +275,10 @@ async fn trigger_analysis(
 
 /// Helper function to download an artifact
 async fn download_artifact(
+    state: &Arc<AppState>,
     client: &reqwest::Client,
     peg_engine_url: &str,
+    execution_id: &str,
     artifact_id: &str,
     dest_path: &std::path::Path,
 ) -> Result<(), anyhow::Error> {
@@ -228,7 +296,7 @@ async fn download_artifact(
         .map_err(|e| anyhow::anyhow!("Failed to download artifact {}: {}", artifact_id, e))?;
 
     let status = response.status().as_u16();
-    let duration_ms = start.elapsed().as_millis();
+    let duration_ms = start.elapsed().as_millis() as u64;
 
     tracing::info!(
         service_call = true,
@@ -237,9 +305,22 @@ async fn download_artifact(
         method = "GET",
         url = %download_url,
         status = status,
-        duration_ms = duration_ms as u64,
+        duration_ms = duration_ms,
         artifact_id = %artifact_id,
         "Downloading artifact from peg-engine"
+    );
+
+    // Record service call
+    record_service_call(
+        state,
+        Some(execution_id.to_string()),
+        "nichefinder-server",
+        "peg-engine",
+        "GET",
+        &download_url,
+        status,
+        duration_ms,
+        Some(artifact_id.to_string()),
     );
 
     let bytes = response
@@ -610,6 +691,107 @@ async fn get_execution_trace(
         .map_err(|e| AppError(anyhow::anyhow!("Failed to parse trace response: {}", e)))?;
 
     Ok(Json(trace_data))
+}
+
+/// Get aggregated service calls for an execution
+async fn get_service_calls(
+    State(state): State<Arc<AppState>>,
+    Path(execution_id): Path<String>,
+) -> Result<Json<ServiceCallsResponse>, AppError> {
+    // Get all service calls for this execution
+    let calls = state
+        .service_calls
+        .read()
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to read service calls: {}", e)))?
+        .iter()
+        .filter(|call| {
+            call.execution_id.as_ref().map(|id| id == &execution_id).unwrap_or(false)
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+
+    // Group calls by operation type
+    let mut aggregated = HashMap::new();
+
+    for call in calls {
+        // Determine operation type based on URL
+        let operation = if call.url.contains("/artifacts/") && call.url.contains("/download") {
+            "artifact_download"
+        } else if call.url.contains("/artifacts") {
+            "artifact_fetch"
+        } else {
+            "other"
+        };
+
+        let key = format!("{}_{}", operation, call.method);
+        aggregated
+            .entry(key.clone())
+            .or_insert_with(|| AggregatedServiceCall {
+                operation: operation.to_string(),
+                service_from: call.service_from.clone(),
+                service_to: call.service_to.clone(),
+                method: call.method.clone(),
+                call_count: 0,
+                success_count: 0,
+                failure_count: 0,
+                avg_duration: 0.0,
+                min_duration: u64::MAX,
+                max_duration: 0,
+                timestamp: call.timestamp.clone(),
+                details: Vec::new(),
+            });
+
+        if let Some(agg) = aggregated.get_mut(&key) {
+            agg.call_count += 1;
+            if call.status >= 200 && call.status < 300 {
+                agg.success_count += 1;
+            } else {
+                agg.failure_count += 1;
+            }
+            agg.min_duration = agg.min_duration.min(call.duration_ms);
+            agg.max_duration = agg.max_duration.max(call.duration_ms);
+            agg.details.push(call);
+        }
+    }
+
+    // Calculate average durations
+    for agg in aggregated.values_mut() {
+        let total_duration: u64 = agg.details.iter().map(|c| c.duration_ms).sum();
+        agg.avg_duration = if agg.call_count > 0 {
+            total_duration as f64 / agg.call_count as f64
+        } else {
+            0.0
+        };
+    }
+
+    let aggregated_calls: Vec<AggregatedServiceCall> = aggregated.into_values().collect();
+
+    Ok(Json(ServiceCallsResponse {
+        execution_id,
+        aggregated_calls,
+    }))
+}
+
+#[derive(Debug, Serialize)]
+struct ServiceCallsResponse {
+    execution_id: String,
+    aggregated_calls: Vec<AggregatedServiceCall>,
+}
+
+#[derive(Debug, Serialize)]
+struct AggregatedServiceCall {
+    operation: String,
+    service_from: String,
+    service_to: String,
+    method: String,
+    call_count: usize,
+    success_count: usize,
+    failure_count: usize,
+    avg_duration: f64,
+    min_duration: u64,
+    max_duration: u64,
+    timestamp: String,
+    details: Vec<ServiceCall>,
 }
 
 // ============================================================================
