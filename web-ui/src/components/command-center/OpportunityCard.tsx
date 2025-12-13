@@ -48,8 +48,8 @@ function SignalBar({ value, label, inverse = false }: { value: number; label: st
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-widest text-gray-400 font-medium">{label}</span>
-        <span className="text-[9px] font-mono text-gray-300">{value.toFixed(0)}</span>
+        <span className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">{label}</span>
+        <span className="text-[10px] font-mono text-gray-300">{value.toFixed(0)}</span>
       </div>
       <div className="h-1.5 bg-gray-900/80 rounded-sm overflow-hidden">
         <div
@@ -89,8 +89,8 @@ function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising'
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-widest text-gray-400 font-medium">Trend</span>
-        <span className="text-[10px] text-gray-300">{directionIcon}</span>
+        <span className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Trend</span>
+        <span className="text-[11px] text-gray-300">{directionIcon}</span>
       </div>
       <svg viewBox="0 0 100 24" className="w-full h-6" preserveAspectRatio="none">
         <path
@@ -125,7 +125,7 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
 
       {/* Minimal Header - Rank, Name, Score */}
       <div className="px-4 py-3 border-b border-gray-800/50 relative">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-mono text-gray-400 tracking-wider">
               #{rank.toString().padStart(2, '0')}
@@ -138,6 +138,10 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
             {opportunity.score.toFixed(1)}
           </span>
         </div>
+        {/* Product Description - Under heading */}
+        <p className="text-xs leading-relaxed text-gray-300 font-light pl-9">
+          {summary}
+        </p>
       </div>
 
       {/* Signal Strip - Primary Payload (Visual-First) */}
@@ -155,13 +159,6 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
         <TrendSparkline trend={scoring.trend} momentum={signals.momentum} />
       </div>
 
-      {/* Product Description - Small, Secondary */}
-      <div className="px-4 py-3 border-t border-gray-800/50 relative">
-        <p className="text-[11px] leading-relaxed text-gray-300 font-light">
-          {summary}
-        </p>
-      </div>
-
       {/* CTA - Command style */}
       <div className="px-4 py-3 border-t border-gray-800/50 relative">
         <button
@@ -169,7 +166,7 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
             e.stopPropagation();
             onExplore();
           }}
-          className="w-full flex items-center justify-center gap-2 bg-gray-800/50 hover:bg-gray-800/80 border border-gray-700/50 hover:border-gray-600/50 text-gray-200 font-medium text-[11px] py-2 px-4 rounded transition-all duration-300 uppercase tracking-widest"
+          className="w-full flex items-center justify-center gap-2 bg-gray-800/50 hover:bg-gray-800/80 border border-gray-700/50 hover:border-gray-600/50 text-gray-200 font-medium text-xs py-2 px-4 rounded transition-all duration-300 uppercase tracking-widest"
         >
           Explore
           <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
