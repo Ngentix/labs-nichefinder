@@ -17,34 +17,34 @@ export function Header() {
   }, [darkMode]);
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <header className="bg-gray-900 border-b border-gray-800/50 px-6 py-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Search className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <Search className="w-6 h-6 text-gray-300" />
+          <h1 className="text-xl font-semibold text-gray-100">
             NicheFinder Platform Demo Console
           </h1>
-          <span className="text-sm text-gray-500 dark:text-gray-400">v2.0</span>
+          <span className="text-sm text-gray-400">v2.0</span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-800/60 transition-all duration-200 hover:brightness-110"
             aria-label="Toggle dark mode"
           >
             {darkMode ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <Sun className="w-5 h-5 text-gray-300" />
             ) : (
-              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <Moon className="w-5 h-5 text-gray-300" />
             )}
           </button>
-          
+
           <button
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-800/60 transition-all duration-200 hover:brightness-110"
             aria-label="Settings"
           >
-            <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <Settings className="w-5 h-5 text-gray-300" />
           </button>
         </div>
       </div>

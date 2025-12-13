@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Zap, 
-  RefreshCw, 
-  BarChart3, 
-  Package 
+import {
+  LayoutDashboard,
+  Zap,
+  RefreshCw,
+  BarChart3,
+  Package
 } from 'lucide-react';
 
 interface Tab {
@@ -49,7 +49,7 @@ const tabs: Tab[] = [
 
 export function TabNavigation() {
   return (
-    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <nav className="bg-gray-900 border-b border-gray-800/50">
       <div className="flex px-6">
         {tabs.map((tab) => (
           <NavLink
@@ -57,10 +57,9 @@ export function TabNavigation() {
             to={tab.path}
             end={tab.path === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
-                isActive
-                  ? 'border-primary text-primary dark:text-primary'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              `flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-200 ${isActive
+                ? 'border-gray-300 text-gray-100 brightness-110'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:brightness-110'
               }`
             }
           >
