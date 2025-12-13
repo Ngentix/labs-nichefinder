@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { AlertTriangle, XCircle } from 'lucide-react';
+import { AlertTriangle, XCircle, Play, RefreshCw } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { ServiceCallTrace } from '../components/trace/ServiceCallTrace';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
@@ -12,6 +12,21 @@ export function WorkflowExecution() {
   const [execution, setExecution] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<string>('');
+  const [executing, setExecuting] = useState(false);
+
+  const fetchWorkflows = async () => {
+    try {
+      const data = await apiClient.getWorkflows();
+      setWorkflows(data.workflows || []);
+      if (data.workflows && data.workflows.length > 0) {
+        setSelectedWorkflow(data.workflows[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch workflows:', err);
+    }
+  };
 
   const fetchExecution = async () => {
     try {
@@ -25,7 +40,7 @@ export function WorkflowExecution() {
         const executions = data.executions || [];
 
         if (executions.length === 0) {
-          setError('No executions found. Execute a workflow to see results.');
+          setError(null); // Clear error to show the execute button
           setLoading(false);
           return;
         }
@@ -46,7 +61,28 @@ export function WorkflowExecution() {
     }
   };
 
+  const handleExecuteWorkflow = async () => {
+    if (!selectedWorkflow) return;
+
+    setExecuting(true);
+    try {
+      const response = await apiClient.executeWorkflow(selectedWorkflow);
+      console.log('Workflow execution started:', response);
+
+      // Wait a moment for the execution to be created, then refresh
+      setTimeout(() => {
+        fetchExecution();
+        setExecuting(false);
+      }, 1000);
+    } catch (err) {
+      console.error('Failed to execute workflow:', err);
+      setError(err instanceof Error ? err.message : 'Failed to execute workflow');
+      setExecuting(false);
+    }
+  };
+
   useEffect(() => {
+    fetchWorkflows();
     fetchExecution();
   }, [id]);
 
@@ -71,10 +107,82 @@ export function WorkflowExecution() {
     );
   }
 
-  if (error || !execution) {
+  // Show execute workflow UI if no executions found
+  if (!execution && !error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="border-b border-gray-200 pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">Workflow Execution</h2>
+          <p className="text-sm text-gray-500 mt-1">Execute a workflow to see results</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Execute Workflow</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Select a workflow and click "Execute" to start a new workflow execution.
+            The execution will appear here once started.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="workflow-select" className="block text-sm font-medium text-gray-700 mb-2">
+                Select Workflow
+              </label>
+              <select
+                id="workflow-select"
+                value={selectedWorkflow}
+                onChange={(e) => setSelectedWorkflow(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={executing}
+              >
+                {workflows.map((workflow) => (
+                  <option key={workflow.id} value={workflow.id}>
+                    {workflow.name}
+                  </option>
+                ))}
+              </select>
+              {selectedWorkflow && (
+                <p className="mt-2 text-sm text-gray-500">
+                  {workflows.find(w => w.id === selectedWorkflow)?.description || 'No description available'}
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={handleExecuteWorkflow}
+              disabled={!selectedWorkflow || executing}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              {executing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Executing...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  Execute Workflow
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="p-6">
-        <ErrorMessage message={error || 'Execution not found'} />
+        <ErrorMessage message={error} />
+      </div>
+    );
+  }
+
+  if (!execution) {
+    return (
+      <div className="p-6">
+        <ErrorMessage message="Execution not found" />
       </div>
     );
   }
@@ -90,7 +198,27 @@ export function WorkflowExecution() {
             <h2 className="text-2xl font-bold text-gray-900">Workflow Execution</h2>
             <p className="text-sm text-gray-500 mt-1">ID: {execution.id}</p>
           </div>
-          <StatusBadge status={execution.status} />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExecuteWorkflow}
+              disabled={!selectedWorkflow || executing}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+              title="Execute another workflow"
+            >
+              {executing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Executing...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  Execute Workflow
+                </>
+              )}
+            </button>
+            <StatusBadge status={execution.status} />
+          </div>
         </div>
       </div>
 

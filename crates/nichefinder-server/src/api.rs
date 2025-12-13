@@ -644,36 +644,47 @@ struct SystemStatsResponse {
 async fn get_workflows(
     State(_state): State<Arc<AppState>>,
 ) -> Result<Json<WorkflowsResponse>, AppError> {
-    // TODO: Load workflows from UDM
-    Ok(Json(WorkflowsResponse {
-        workflows: vec![
-            WorkflowDefinition {
-                id: "homeassistant-analysis".to_string(),
-                name: "Home Assistant Analysis".to_string(),
-                description: Some("Analyze Home Assistant integration opportunities".to_string()),
-                steps: vec![
-                    WorkflowStep {
-                        id: "fetch-hacs".to_string(),
-                        name: "Fetch HACS Data".to_string(),
-                        connector: "hacs-connector".to_string(),
-                        status: None,
-                    },
-                    WorkflowStep {
-                        id: "fetch-github".to_string(),
-                        name: "Fetch GitHub Data".to_string(),
-                        connector: "github-connector".to_string(),
-                        status: None,
-                    },
-                    WorkflowStep {
-                        id: "fetch-youtube".to_string(),
-                        name: "Fetch YouTube Data".to_string(),
-                        connector: "youtube-connector".to_string(),
-                        status: None,
-                    },
-                ],
-            },
-        ],
-    }))
+    // Get peg-engine URL from environment or use default
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    let url = format!("{}/api/v1/workflows", peg_engine_url);
+
+    // Fetch workflows from peg-engine
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch workflows from peg-engine: {}", e)))?;
+
+    let status = response.status();
+    if !status.is_success() {
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(AppError(anyhow::anyhow!(
+            "Failed to fetch workflows: HTTP {} - {}",
+            status.as_u16(),
+            error_text
+        )));
+    }
+
+    let workflows_data: Vec<serde_json::Value> = response
+        .json()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse workflows response: {}", e)))?;
+
+    // Map to simplified workflow definitions
+    let workflows: Vec<WorkflowDefinition> = workflows_data
+        .iter()
+        .map(|w| WorkflowDefinition {
+            id: w["id"].as_str().unwrap_or("unknown").to_string(),
+            name: w["name"].as_str().unwrap_or("Unknown Workflow").to_string(),
+            description: w["description"].as_str().map(|s| s.to_string()),
+            steps: vec![], // We don't need steps for the workflow selector
+        })
+        .collect();
+
+    Ok(Json(WorkflowsResponse { workflows }))
 }
 
 #[derive(Debug, Serialize)]
@@ -699,15 +710,97 @@ struct WorkflowStep {
 
 /// Execute a workflow
 async fn execute_workflow(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> Result<Json<ExecutionResponse>, AppError> {
-    // TODO: Implement actual workflow execution
+    tracing::info!("Executing workflow: {}", id);
+
+    // Get peg-engine URL from environment or use default
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    let url = format!("{}/api/v1/workflows/{}/execute", peg_engine_url, id);
+
+    // Log and execute HTTP call
+    let client = reqwest::Client::new();
+    let start = Instant::now();
+    let response = client
+        .post(&url)
+        .json(&serde_json::json!({
+            "context": {}
+        }))
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to execute workflow in peg-engine: {}", e)))?;
+
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis() as u64;
+
+    if !response.status().is_success() {
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+
+        tracing::error!(
+            service_call = true,
+            service_from = "nichefinder-server",
+            service_to = "peg-engine",
+            operation = "workflow_execute",
+            http_method = "POST",
+            url = %url,
+            status_code = status,
+            duration_ms = duration_ms,
+            error = %error_text,
+            "Service call failed: Execute workflow"
+        );
+
+        return Err(AppError(anyhow::anyhow!(
+            "Failed to execute workflow: HTTP {} - {}",
+            status,
+            error_text
+        )));
+    }
+
+    let execution_data: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse execution response: {}", e)))?;
+
+    // Extract execution ID from response
+    let execution_id = execution_data["id"]
+        .as_str()
+        .unwrap_or("unknown")
+        .to_string();
+
+    // Record service call
+    record_service_call(
+        &state,
+        Some(execution_id.clone()),
+        "nichefinder-server",
+        "peg-engine",
+        "POST",
+        &url,
+        status,
+        duration_ms,
+        None,
+    );
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        operation = "workflow_execute",
+        http_method = "POST",
+        url = %url,
+        status_code = status,
+        duration_ms = duration_ms,
+        execution_id = %execution_id,
+        "Service call: Execute workflow"
+    );
+
     Ok(Json(ExecutionResponse {
-        execution_id: format!("exec-{}", uuid::Uuid::new_v4()),
+        execution_id,
         workflow_id: id,
-        status: "queued".to_string(),
-        message: "Workflow execution queued".to_string(),
+        status: "running".to_string(),
+        message: "Workflow execution started successfully".to_string(),
     }))
 }
 
