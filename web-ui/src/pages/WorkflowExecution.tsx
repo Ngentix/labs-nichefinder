@@ -29,9 +29,9 @@ export function WorkflowExecution() {
           return;
         }
 
-        // Sort by started_at descending to get the latest
+        // Sort by startTime descending to get the latest
         const sortedExecutions = executions.sort((a: any, b: any) =>
-          new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
         );
 
         setExecution(sortedExecutions[0]);
@@ -108,14 +108,14 @@ export function WorkflowExecution() {
           <div>
             <dt className="text-sm font-medium text-gray-500">Started At</dt>
             <dd className="mt-1 text-sm text-gray-900">
-              {new Date(execution.started_at).toLocaleString()}
+              {new Date(execution.startTime).toLocaleString()}
             </dd>
           </div>
-          {execution.completed_at && (
+          {execution.endTime && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Completed At</dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {new Date(execution.completed_at).toLocaleString()}
+                {new Date(execution.endTime).toLocaleString()}
               </dd>
             </div>
           )}

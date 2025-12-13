@@ -60,7 +60,9 @@ const sizeConfig = {
 };
 
 export function StatusBadge({ status, label, size = 'md' }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  // Normalize status to lowercase and handle unknown values
+  const normalizedStatus = status.toLowerCase() as Status;
+  const config = statusConfig[normalizedStatus] || statusConfig.unknown;
   const sizeStyles = sizeConfig[size];
   const Icon = config.icon;
   const displayLabel = label || config.label;
