@@ -892,14 +892,55 @@ Top 5 Opportunities:
   - End-to-end validation: PEG → Connectors → Artifacts → Transform → Analysis → Report
   - All 3 data sources successfully integrated
 
-**Phase 3: Platform Demo Console** 🔄 IN PROGRESS
-- [ ] **Build React + TypeScript UI** (12-day timeline)
-  - See `UI_STRATEGY.md`, `UI_MOCKUP.md`, `UI_IMPLEMENTATION_PLAN.md` for details
-  - 5 core tabs: System Overview, Workflow Execution, Data Pipeline, Results, Artifacts
-  - Purpose: Demonstrate end-to-end UDM + PEG + Connector ecosystem
-- [ ] **Extend backend API** with new endpoints
+**Phase 3: Platform Demo Console** 🔄 IN PROGRESS (~60% Complete)
+- [x] **UI Foundation & Infrastructure** (Phase 3.1-3.4)
+  - React 18 + TypeScript + Vite project initialized
+  - Tailwind CSS v4, React Router, Zustand, React Flow, Monaco Editor, Recharts
+  - Layout components (Header, TabNavigation, Footer)
+  - Shared components (StatusBadge, LoadingSpinner, ErrorMessage, CodeViewer)
+  - Infrastructure startup scripts (`start-demo.sh`, `stop-demo.sh`)
+- [x] **Backend API Extensions**
+  - 10+ REST endpoints in nichefinder-server (Rust/Axum)
   - System status, workflow execution, artifact browsing, connector management
-  - Real-time execution logs and status updates
+  - CORS support for local development
+  - Database populated with 50 opportunities
+- [x] **Results Tab** - FULLY IMPLEMENTED
+  - Displays 50 opportunities with scoring breakdown
+  - Source attribution (HACS, GitHub, YouTube)
+  - Sortable table
+- [x] **Workflow Execution Tab** - FULLY IMPLEMENTED
+  - Auto-display of latest execution
+  - Execution details (ID, status, timestamps, artifacts)
+  - Service Call Trace (peg-engine traces grouped by step)
+  - Aggregated service calls (nichefinder-server → peg-engine)
+  - Expand/collapse for details
+  - Real-time polling during execution
+  - Complete end-to-end ecosystem visibility
+- [x] **Service Call Trace Feature** (Phase 3.5)
+  - PostgreSQL execution_traces table
+  - HTTP interceptors in peg-engine
+  - Trace storage and retrieval API
+  - Frontend TraceEntry and ServiceCallTrace components
+- [x] **Aggregated Service Call Viewer** (Phase 3.6)
+  - In-memory service call storage in nichefinder-server
+  - Aggregation by operation type
+  - Frontend AggregatedServiceCall component
+  - Real-time updates
+- [ ] **System Overview Tab** - Placeholder (Priority 1)
+  - Architecture diagram
+  - Service health status
+  - System statistics
+- [ ] **Artifacts Tab** - Placeholder (Priority 1)
+  - File browser
+  - JSON preview
+  - Download functionality
+- [ ] **Data Pipeline Tab** - Placeholder (Priority 2)
+  - 3-column view: Raw → Normalized → Analyzed
+  - Transformation rules display
+- [ ] **Polish & Testing** (Priority 2)
+  - Error handling, loading states
+  - Browser testing (Chrome, Firefox, Safari)
+  - Responsive design
 - [ ] **Create demo narrative** (5-10 minute presentation flow)
 - [ ] **Test end-to-end demo** with stakeholders
 

@@ -1,8 +1,8 @@
 # Phase 3: Platform Demo Console UI - Handoff Document
 
-**Date:** 2025-12-12  
-**Current Phase:** Phase 3 - Build Platform Demo Console UI  
-**Repository:** `/Users/jg/labs-nichefinder`  
+**Date:** 2025-12-13
+**Current Phase:** Phase 3 - Build Platform Demo Console UI (~60% Complete)
+**Repository:** `/Users/jg/labs-nichefinder`
 **Branch:** `main` (all changes committed and pushed)
 
 ---
@@ -84,47 +84,106 @@
 
 **Key Achievement:** Complete end-to-end system startup with NO shortcuts or workarounds!
 
+### Phase 3.5: Service Call Trace ✅ COMPLETE
+- **Backend (peg-engine):**
+  - Created Prisma migration for `execution_traces` table in PostgreSQL
+  - Added axios interceptors to capture all HTTP requests/responses
+  - Implemented trace service to store HTTP traces in database
+  - Added `GET /api/v1/executions/:id/trace` endpoint
+- **Backend (nichefinder-server):**
+  - Added proxy endpoint to forward trace requests to peg-engine
+  - Implemented structured logging for all HTTP calls
+- **Frontend:**
+  - Created `TraceEntry` component with expand/collapse functionality
+  - Created `ServiceCallTrace` panel component
+  - Integrated into Workflow Execution page with real-time polling
+  - Displays traces grouped by workflow step
+
+**Key Achievement:** Complete visibility into service-to-service communication!
+
+### Phase 3.6: Aggregated Service Call Viewer ✅ COMPLETE
+- **Backend (nichefinder-server):**
+  - Added in-memory storage for service calls (`Arc<RwLock<Vec<ServiceCall>>>`)
+  - Created `record_service_call()` helper function
+  - Updated `trigger_analysis()` and `download_artifact()` to record calls
+  - Added `GET /api/executions/{id}/service-calls` endpoint with aggregation logic
+  - Groups calls by operation type (artifact_download, artifact_fetch)
+  - Calculates aggregated metrics (call count, success/failure, duration stats)
+- **Frontend:**
+  - Created `AggregatedServiceCall` component with expand/collapse
+  - Updated `ServiceCallTrace` to fetch and display both peg-engine traces AND nichefinder-server service calls
+  - Shows collapsed summaries by default (e.g., "3 calls, 100% success, 2ms-2ms")
+  - Expandable to show individual call details
+  - Real-time polling every 500ms while execution is running
+
+**Key Achievement:** Complete end-to-end ecosystem flow visible in UI without overwhelming the page!
+
 ---
 
-## � Current Status: Phase 3 In Progress
+## � Current Status: Phase 3 ~60% Complete
 
-### What's Working Now
+### What's Working Now (✅ COMPLETE)
 ✅ **Full infrastructure startup** - All 6 services start with `./start-demo.sh`
-✅ **Backend API** - 10 endpoints serving data
-✅ **Frontend UI** - Basic React app with 5 tabs
-✅ **Results tab** - Displays 50 opportunities from database
-✅ **End-to-end flow** - peg-engine → credential-vault → PEG-Connector-Service (PROVEN)
+✅ **Backend API** - 10+ endpoints serving data
+✅ **Frontend UI** - React app with 5 tabs (2 fully implemented, 3 placeholders)
+✅ **Results tab** - Displays 50 opportunities from database with scoring
+✅ **Workflow Execution tab** - FULLY FEATURED:
+  - Auto-display of latest execution
+  - Execution details (ID, status, timestamps, artifacts)
+  - Service Call Trace with peg-engine traces (grouped by step)
+  - Aggregated service calls from nichefinder-server → peg-engine
+  - Expand/collapse for details
+  - Real-time polling during execution
+  - Complete end-to-end ecosystem visibility (9 interactions shown)
+✅ **End-to-end flow** - peg-engine → credential-vault → PEG-Connector-Service (PROVEN in UI)
 
-### What's Next
-🚧 **Service Call Trace** - Prove the end-to-end integration in the UI
-🚧 **System Overview tab** - Architecture diagram and service health
-🚧 **Workflow Execution tab** - Trigger workflows and watch execution
-🚧 **Data Pipeline tab** - Show raw → normalized → analyzed transformation
-🚧 **Artifacts tab** - Browse and inspect raw data files
+### What's Next (🚧 Remaining Work)
+
+**Priority 1: Essential for Demo (3-4 days)**
+- 🚧 **System Overview tab** - Architecture diagram, service health status, system stats
+- 🚧 **Artifacts tab** - File browser, JSON preview, download links
+
+**Priority 2: Nice to Have (2-3 days)**
+- 🚧 **Data Pipeline tab** - 3-column view: Raw → Normalized → Analyzed with sample data
+- 🚧 **Polish & Testing** - Error handling, loading states, browser testing
 
 ---
 
-## 🎯 Next Immediate Task: Service Call Trace
+## 🎯 Next Immediate Task: System Overview Tab
 
 ### Purpose
-**PROVE** that the system uses the real end-to-end flow (not workarounds) by showing actual API calls between services in the UI.
+Show the complete architecture and prove all 6 services are running and healthy.
 
-### What We'll Build
-Add a "Service Call Trace" panel to the Workflow Execution tab that shows:
-1. peg-engine → credential-vault (credential retrieval)
-2. credential-vault → AWS KMS (decryption)
-3. peg-engine → PEG-Connector-Service (connector execution with credentials)
-4. PEG-Connector-Service → External APIs (GitHub, HACS, YouTube)
-5. Results stored as artifacts
+### What to Build
+1. **Architecture Diagram**
+   - Visual representation of the 6-service architecture
+   - Show data flow: APIs → Connectors → PEG → UDM → Analysis → Results
+   - Interactive (click to highlight service)
+
+2. **Service Health Status**
+   - Real-time health checks for all 6 services
+   - Status indicators (green = healthy, red = down, yellow = degraded)
+   - Response time metrics
+   - Last check timestamp
+
+3. **System Statistics**
+   - Total executions
+   - Total opportunities analyzed
+   - Total artifacts stored
+   - Uptime
 
 ### Implementation Plan
-See `FEATURE_SERVICE_CALL_TRACE.md` for detailed specification.
+**Backend:**
+- Extend `/api/system/status` endpoint to check all 6 services
+- Add `/api/system/stats` endpoint for statistics
+
+**Frontend:**
+- Create `ArchitectureDiagram` component (can use React Flow or static SVG)
+- Create `ServiceHealthCard` component
+- Create `SystemStats` component
+- Integrate into `SystemOverview` page
 
 **Timeline:** 1-2 days
-- Backend: Add logging middleware to peg-engine
-- Backend: Create `/executions/:id/trace` API endpoint
-- Frontend: Add Service Call Trace panel to Tab 2
-- Frontend: Display real-time API calls with request/response details
 
 ---
 
@@ -260,29 +319,35 @@ indicating strong user interest and reliable maintenance.
 
 ---
 
-## 🏗️ The 5 Core Tabs
+## 🏗️ The 5 Core Tabs - Implementation Status
 
-| Tab | Purpose | Key Features |
-|-----|---------|--------------|
-| 🏗️ **System Overview** | Show architecture & health | Service status, architecture diagram, stats |
-| ⚡ **Workflow Execution** | Trigger & monitor workflows | DAG visualization, real-time logs, history |
-| 🔄 **Data Pipeline** | Show transformations | Raw → Normalized → Analyzed (3-column view) |
-| 📊 **Results** | Display opportunities | Sortable table, scoring breakdown, export |
-| 📦 **Artifacts** | Browse raw data | File browser, JSON preview, download |
+| Tab | Purpose | Status | Completion |
+|-----|---------|--------|------------|
+| 🏗️ **System Overview** | Show architecture & health | ❌ Placeholder | 0% |
+| ⚡ **Workflow Execution** | Trigger & monitor workflows | ✅ **COMPLETE** | 100% |
+| 🔄 **Data Pipeline** | Show transformations | ❌ Placeholder | 0% |
+| 📊 **Results** | Display opportunities | ✅ **COMPLETE** | 100% |
+| 📦 **Artifacts** | Browse raw data | ❌ Placeholder | 0% |
+
+**Overall Phase 3 Progress: ~60% (2 of 5 tabs complete, plus full backend API)**
 
 ---
 
-## 🎬 Demo Narrative (5-10 minutes)
+## 🎬 Demo Narrative (5-10 minutes) - Current Status
 
 The UI tells this story:
 
-1. **System Overview** → "Here's our architecture with 6 services running"
-2. **Workflow Execution** → "Let's execute the Home Assistant workflow"
-3. **Artifacts** → "Here's the data we collected from 3 APIs"
-4. **Data Pipeline** → "Here's how we transform raw data to normalized schema"
-5. **Results** → "Here are the top 20 opportunities with scores"
+| Step | Tab | Status | Notes |
+|------|-----|--------|-------|
+| 1. "Here's our architecture" | System Overview | ❌ Placeholder | Need to build |
+| 2. "Let's execute a workflow" | Workflow Execution | ✅ **COMPLETE** | Fully demonstrable with service call traces |
+| 3. "Here's the data we collected" | Artifacts | ❌ Placeholder | Need to build |
+| 4. "Here's how we transform it" | Data Pipeline | ❌ Placeholder | Can explain verbally using traces |
+| 5. "Here are the results" | Results | ✅ **COMPLETE** | Fully demonstrable with 50 opportunities |
 
-**Result:** Complete understanding of the platform in 10 minutes
+**Current Demo Capability:** Steps 2 and 5 are fully demonstrable. Steps 1, 3, 4 require implementation.
+
+**Minimum Viable Demo:** Build System Overview + Artifacts tabs (Steps 1 & 3) to complete core narrative.
 
 ---
 
@@ -525,16 +590,37 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
 
 **Repository:** https://github.com/Ngentix/labs-nichefinder
 **Branch:** main
-**Latest Commit:** 75f44e6 - "docs: Update status and add future data source enhancements"
+**Latest Commit:** [Check git log for latest]
+
+**Phase 3 Progress: ~60% Complete (2 of 5 tabs fully implemented)**
 
 **What's Working:**
-✅ Phase 1: PEG Connectors (HACS, GitHub, YouTube) - COMPLETE
-✅ Phase 2: UDM Normalization & Data Analysis - COMPLETE
-✅ Phase 3.1-3.4: UI Foundation & Results Tab - COMPLETE
-  - Frontend running on http://localhost:5173
-  - Backend API running on http://localhost:3001
-  - 50 opportunities displayed in Results tab
-  - All 3 data sources showing (HACS, GitHub, YouTube (general))
+✅ **Phase 1:** PEG Connectors (HACS, GitHub, YouTube) - COMPLETE
+✅ **Phase 2:** UDM Normalization & Data Analysis - COMPLETE
+✅ **Phase 3.1-3.4:** UI Foundation & Results Tab - COMPLETE
+✅ **Phase 3.5:** Service Call Trace - COMPLETE
+✅ **Phase 3.6:** Aggregated Service Call Viewer - COMPLETE
+
+**Fully Implemented Tabs:**
+1. ✅ **Workflow Execution** - FULLY FEATURED:
+   - Auto-display of latest execution
+   - Execution details (ID, status, timestamps, artifacts)
+   - Service Call Trace with peg-engine traces (grouped by step)
+   - Aggregated service calls from nichefinder-server → peg-engine
+   - Expand/collapse for details
+   - Real-time polling during execution
+   - Shows complete end-to-end ecosystem flow (9 interactions)
+
+2. ✅ **Results** - FULLY FEATURED:
+   - Displays 50 opportunities from database
+   - Scoring breakdown
+   - Source attribution (HACS, GitHub, YouTube)
+   - Sortable table
+
+**Placeholder Tabs (Need Implementation):**
+- ❌ System Overview (architecture diagram, service health)
+- ❌ Artifacts (file browser, JSON preview)
+- ❌ Data Pipeline (raw → normalized → analyzed transformation)
 
 **Services Running:**
 1. Infrastructure (Docker): PostgreSQL, Redis, ChromaDB
@@ -550,28 +636,28 @@ cd /Users/jg/labs-nichefinder
 ./start-demo.sh  # Starts all 6 services + infrastructure
 ```
 
-## 🎯 Next Task: Phase 3.5 - Service Call Trace
+## 🎯 Next Task: System Overview Tab
 
-**Goal:** PROVE the end-to-end integration by showing actual API calls between services in the UI.
+**Goal:** Show the complete architecture and prove all 6 services are running and healthy.
 
 **What to Build:**
-1. Backend: Add HTTP logging middleware to peg-engine
-2. Backend: Create execution_traces PostgreSQL table
-3. Backend: Implement `/executions/:id/trace` API endpoint
-4. Frontend: Create TraceEntry component
-5. Frontend: Create ServiceCallTrace panel for Workflow Execution tab
-6. Frontend: Implement real-time polling for trace updates
+1. **Architecture Diagram** - Visual representation of 6-service architecture
+2. **Service Health Status** - Real-time health checks with status indicators
+3. **System Statistics** - Total executions, opportunities, artifacts, uptime
 
-**What This Proves:**
-✅ peg-engine → credential-vault (credential retrieval)
-✅ credential-vault → AWS KMS (decryption)
-✅ peg-engine → PEG-Connector-Service (connector execution)
-✅ PEG-Connector-Service → External APIs (GitHub, HACS, YouTube)
-✅ NO shortcuts or workarounds!
+**Why This Matters:**
+- Completes Step 1 of the demo narrative ("Here's our architecture")
+- Proves all services are running (no shortcuts)
+- Essential for compelling demo
 
-**Detailed Specification:** See `FEATURE_SERVICE_CALL_TRACE.md`
+**Implementation:**
+- Backend: Extend `/api/system/status` and `/api/system/stats` endpoints
+- Frontend: Create ArchitectureDiagram, ServiceHealthCard, SystemStats components
+- Integrate into SystemOverview page
 
 **Timeline:** 1-2 days
+
+**After This:** Build Artifacts tab to complete minimum viable demo (Steps 1, 2, 3, 5 of narrative)
 
 ## 📚 Key Documents to Review
 
@@ -603,16 +689,30 @@ cd /Users/jg/labs-nichefinder
 - Transparency over simplicity
 - ALWAYS use the full end-to-end system (NO shortcuts or workarounds)
 
-## ✅ Success Criteria for Phase 3.5
+## ✅ Success Criteria for Next Phase (System Overview Tab)
 
-1. ✅ Every HTTP call during workflow execution is captured
-2. ✅ Traces are visible in the UI in real-time
-3. ✅ Request/response details are available on expand
-4. ✅ Clearly shows: peg-engine → credential-vault → PEG-Connector-Service flow
-5. ✅ Proves NO shortcuts or workarounds are being used
+1. ✅ Architecture diagram shows all 6 services and data flow
+2. ✅ Service health checks work for all services
+3. ✅ Status indicators update in real-time
+4. ✅ System statistics are accurate and up-to-date
+5. ✅ Completes Step 1 of demo narrative
 
 ## 🚀 Ready to Start
 
-Please help me implement Phase 3.5: Service Call Trace. Start by reviewing `FEATURE_SERVICE_CALL_TRACE.md` and let me know your implementation plan.
+Please help me implement the System Overview tab. This is the next priority to complete the minimum viable demo.
+
+**Key Documents:**
+- `UI_STRATEGY.md` - Overall UI vision
+- `UI_MOCKUP.md` - Visual mockups
+- `PHASE_3_HANDOFF.md` - This document (current status)
+
+**Estimated Remaining Work:**
+- System Overview tab: 1-2 days
+- Artifacts tab: 1-2 days
+- Data Pipeline tab: 2 days (optional)
+- Polish & Testing: 1 day
+
+**Total to MVP Demo:** 3-4 days (System Overview + Artifacts)
+**Total to Full Phase 3:** 5-6 days (all tabs + polish)
 
 
