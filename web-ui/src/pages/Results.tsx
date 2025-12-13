@@ -4,6 +4,7 @@ import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { ErrorMessage } from '../components/shared/ErrorMessage';
 import { OpportunityDrawer } from '../components/results/OpportunityDrawer';
 import { OpportunitiesCommandCenter } from '../components/command-center/OpportunitiesCommandCenter';
+import { generateInsights } from '../utils/opportunityHelpers';
 
 interface DataSource {
   name: string;
@@ -63,6 +64,9 @@ export function Results() {
   useEffect(() => {
     fetchOpportunities();
   }, []);
+
+  // Generate insights for intelligence integration
+  const insights = generateInsights(opportunities);
 
   if (loading) {
     return <LoadingSpinner message="Loading opportunities..." />;
@@ -179,6 +183,7 @@ export function Results() {
       {selectedOpportunity && (
         <OpportunityDrawer
           opportunity={selectedOpportunity}
+          insights={insights}
           onClose={() => setSelectedOpportunity(null)}
         />
       )}

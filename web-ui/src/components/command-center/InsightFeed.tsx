@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Insight } from '../../utils/opportunityHelpers';
 
 interface InsightFeedProps {
@@ -14,17 +16,44 @@ const insightTypeStyles = {
 };
 
 export function InsightFeed({ insights, onInsightClick }: InsightFeedProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (insights.length === 0) {
     return null;
   }
 
+  // Show top 2 insights when collapsed, all when expanded
+  const displayedInsights = isExpanded ? insights : insights.slice(0, 2);
+
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest mb-5">
-        Intelligence Feed
-      </h3>
+      {/* Header with toggle */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest">
+          System Commentary
+        </h3>
+        {insights.length > 2 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors uppercase tracking-wide"
+          >
+            {isExpanded ? (
+              <>
+                <span>Show Less</span>
+                <ChevronUp className="w-3.5 h-3.5" />
+              </>
+            ) : (
+              <>
+                <span>Show All ({insights.length})</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
       <div className="space-y-2.5">
-        {insights.map((insight, index) => (
+        {displayedInsights.map((insight, index) => (
           <div
             key={insight.id}
             className={`border rounded-lg p-4 transition-all duration-500 bg-gray-900/30 backdrop-blur-sm ${insightTypeStyles[insight.type]

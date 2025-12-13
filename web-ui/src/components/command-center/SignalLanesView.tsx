@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { calculateSignals } from '../../utils/opportunityHelpers';
+import { calculateSignals, Insight } from '../../utils/opportunityHelpers';
 
 interface DataSource {
   name: string;
@@ -36,6 +37,7 @@ interface Opportunity {
 
 interface SignalLanesViewProps {
   opportunities: Opportunity[];
+  insights: Insight[];
   onExploreOpportunity: (opportunity: Opportunity) => void;
 }
 
@@ -43,9 +45,9 @@ interface SignalLanesViewProps {
 function SignalBar({ value, width = 100 }: { value: number; width?: number }) {
   return (
     <div className="h-2 bg-gray-900/80 rounded-sm overflow-hidden" style={{ width: `${width}px` }}>
-      <div 
+      <div
         className="h-full bg-gray-300 transition-all duration-700 ease-out"
-        style={{ 
+        style={{
           width: `${value}%`,
           animation: `fillBar 0.7s ease-out forwards`
         }}
@@ -56,16 +58,16 @@ function SignalBar({ value, width = 100 }: { value: number; width?: number }) {
 
 // Trend sparkline component
 function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising' | 'Stable' | 'Fading' }) {
-  const points = momentum === 'Rising' 
+  const points = momentum === 'Rising'
     ? [30, 35, 40, 50, 60, 70, trend]
     : momentum === 'Fading'
-    ? [70, 65, 60, 55, 50, 45, trend]
-    : [50, 52, 48, 51, 49, 50, trend];
-  
+      ? [70, 65, 60, 55, 50, 45, trend]
+      : [50, 52, 48, 51, 49, 50, trend];
+
   const max = Math.max(...points);
   const min = Math.min(...points);
   const range = max - min || 1;
-  
+
   const pathData = points
     .map((value, index) => {
       const x = (index / (points.length - 1)) * 100;
@@ -73,9 +75,9 @@ function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising'
       return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
     })
     .join(' ');
-  
+
   const directionIcon = momentum === 'Rising' ? '↗' : momentum === 'Fading' ? '↘' : '→';
-  
+
   return (
     <div className="flex items-center gap-2">
       <svg viewBox="0 0 100 24" className="w-20 h-6" preserveAspectRatio="none">
@@ -93,18 +95,32 @@ function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising'
   );
 }
 
-export function SignalLanesView({ opportunities, onExploreOpportunity }: SignalLanesViewProps) {
+// Insight type styles for margin annotations
+const insightTypeStyles = {
+  hot: 'text-red-400',
+  rising: 'text-blue-400',
+  warning: 'text-yellow-400',
+  info: 'text-gray-400',
+};
+
+export function SignalLanesView({ opportunities, insights, onExploreOpportunity }: SignalLanesViewProps) {
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+
   return (
     <div className="space-y-1">
       {opportunities.map((opportunity, index) => {
         const signals = calculateSignals(opportunity.scoring_details);
         const scoring = opportunity.scoring_details;
-        
+        const insight = insights.find(i => i.opportunityId === opportunity.id);
+        const showInsight = insight && (index < 5 || hoveredRow === opportunity.id);
+
         return (
           <div
             key={opportunity.id}
             onClick={() => onExploreOpportunity(opportunity)}
-            className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 hover:bg-gray-900/60 transition-all duration-300 cursor-pointer group"
+            onMouseEnter={() => setHoveredRow(opportunity.id)}
+            onMouseLeave={() => setHoveredRow(null)}
+            className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 hover:bg-gray-900/60 transition-all duration-300 cursor-pointer group relative"
             style={{
               animation: `fadeSlideUp 0.5s ease-out ${index * 50}ms both`,
             }}
@@ -156,6 +172,20 @@ export function SignalLanesView({ opportunities, onExploreOpportunity }: SignalL
                 <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
               </div>
             </div>
+
+            {/* Margin Annotation - Right-hand commentary gutter */}
+            {showInsight && (
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <div className="bg-gray-900/90 border border-gray-700/50 rounded px-3 py-1.5 max-w-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm flex-shrink-0">{insight.icon}</span>
+                    <p className={`text-xs font-light ${insightTypeStyles[insight.type]}`}>
+                      {insight.text.replace(opportunity.name, '').trim()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

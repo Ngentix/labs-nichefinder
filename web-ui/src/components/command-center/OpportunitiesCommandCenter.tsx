@@ -151,18 +151,21 @@ export function OpportunitiesCommandCenter({
         {layoutMode === 'cards' && (
           <CardsView
             opportunities={opportunities}
+            insights={insights}
             onExploreOpportunity={onExploreOpportunity}
           />
         )}
         {layoutMode === 'lanes' && (
           <SignalLanesView
             opportunities={opportunities}
+            insights={insights}
             onExploreOpportunity={onExploreOpportunity}
           />
         )}
         {layoutMode === 'matrix' && (
           <MatrixView
             opportunities={opportunities}
+            insights={insights}
             onExploreOpportunity={onExploreOpportunity}
           />
         )}

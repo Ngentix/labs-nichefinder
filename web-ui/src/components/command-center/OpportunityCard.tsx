@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import { calculateSignals, generateOpportunitySummary } from '../../utils/opportunityHelpers';
+import { calculateSignals, generateOpportunitySummary, Insight } from '../../utils/opportunityHelpers';
 
 interface DataSource {
   name: string;
@@ -38,6 +38,7 @@ interface OpportunityCardProps {
   opportunity: Opportunity;
   rank: number;
   delay?: number;
+  insight?: Insight;
   onExplore: () => void;
 }
 
@@ -106,7 +107,15 @@ function TrendSparkline({ trend, momentum }: { trend: number; momentum: 'Rising'
   );
 }
 
-export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: OpportunityCardProps) {
+// Insight type styles for inline callouts
+const insightTypeStyles = {
+  hot: 'bg-red-500/10 border-red-500/30 text-red-300',
+  rising: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
+  warning: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300',
+  info: 'bg-gray-500/10 border-gray-600/30 text-gray-300',
+};
+
+export function OpportunityCard({ opportunity, rank, delay = 0, insight, onExplore }: OpportunityCardProps) {
   const signals = calculateSignals(opportunity.scoring_details);
   const summary = generateOpportunitySummary(opportunity);
   const scoring = opportunity.scoring_details;
@@ -158,6 +167,18 @@ export function OpportunityCard({ opportunity, rank, delay = 0, onExplore }: Opp
         {/* Trend Sparkline - Mandatory */}
         <TrendSparkline trend={scoring.trend} momentum={signals.momentum} />
       </div>
+
+      {/* Intelligence Callout - Contextual insight */}
+      {insight && (
+        <div className={`mx-4 my-3 px-3 py-2 rounded border ${insightTypeStyles[insight.type]} transition-all duration-300`}>
+          <div className="flex items-start gap-2">
+            <span className="text-sm flex-shrink-0 opacity-90">{insight.icon}</span>
+            <p className="text-xs leading-relaxed font-light">
+              {insight.text.replace(opportunity.name, '').trim()}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* CTA - Command style */}
       <div className="px-4 py-3 border-t border-gray-800/50 relative">

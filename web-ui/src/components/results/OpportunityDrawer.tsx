@@ -5,6 +5,7 @@ import {
   calculateSignals,
   generateBuilderQuestions,
   generateRankingReasons,
+  Insight,
 } from '../../utils/opportunityHelpers';
 
 interface DataSource {
@@ -42,23 +43,20 @@ interface Opportunity {
 
 interface OpportunityDrawerProps {
   opportunity: Opportunity;
+  insights?: Insight[];
   onClose: () => void;
 }
 
-type Tab = 'overview' | 'evidence' | 'actions';
+type Tab = 'overview' | 'intelligence' | 'evidence' | 'actions';
 
 // Signal Meter Component - Large visual representation
 function SignalMeter({
   label,
   value,
-  color = 'gray',
-  inverse = false,
   momentum
 }: {
   label: string;
   value: number;
-  color?: string;
-  inverse?: boolean;
   momentum?: 'Rising' | 'Stable' | 'Fading';
 }) {
   const displayValue = value;
@@ -90,7 +88,7 @@ function SignalMeter({
   );
 }
 
-export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerProps) {
+export function OpportunityDrawer({ opportunity, insights = [], onClose }: OpportunityDrawerProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
@@ -107,6 +105,7 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
   const signals = calculateSignals(opportunity.scoring_details);
   const questions = generateBuilderQuestions(opportunity);
   const reasons = generateRankingReasons(opportunity);
+  const opportunityInsights = insights.filter(i => i.opportunityId === opportunity.id);
 
   const toggleQuestion = (index: number) => {
     const newExpanded = new Set(expandedQuestions);
@@ -153,23 +152,18 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
             <SignalMeter
               label="Demand"
               value={opportunity.scoring_details.demand}
-              color="gray"
             />
             <SignalMeter
               label="Feasibility"
               value={opportunity.scoring_details.feasibility}
-              color="gray"
             />
             <SignalMeter
               label="Competition"
               value={100 - opportunity.scoring_details.competition}
-              color="gray"
-              inverse
             />
             <SignalMeter
               label="Trend"
               value={opportunity.scoring_details.trend}
-              color="gray"
               momentum={signals.momentum}
             />
           </div>
@@ -195,6 +189,7 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
           <div className="flex gap-1 border-b border-gray-800/50">
             {[
               { id: 'overview' as Tab, label: 'Overview' },
+              { id: 'intelligence' as Tab, label: 'Intelligence' },
               { id: 'evidence' as Tab, label: 'Evidence' },
               { id: 'actions' as Tab, label: 'Next Actions' },
             ].map((tab) => (
@@ -220,6 +215,13 @@ export function OpportunityDrawer({ opportunity, onClose }: OpportunityDrawerPro
               reasons={reasons}
               expandedQuestions={expandedQuestions}
               onToggleQuestion={toggleQuestion}
+            />
+          )}
+          {activeTab === 'intelligence' && (
+            <IntelligenceTab
+              opportunity={opportunity}
+              insights={opportunityInsights}
+              signals={signals}
             />
           )}
           {activeTab === 'evidence' && (
@@ -544,6 +546,201 @@ function ActionsTab({ opportunity }: ActionsTabProps) {
           </ul>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Intelligence Tab Component
+interface IntelligenceTabProps {
+  opportunity: Opportunity;
+  insights: Insight[];
+  signals: {
+    demand: 'High' | 'Med' | 'Low';
+    momentum: 'Rising' | 'Stable' | 'Fading';
+    buildability: 'Solo-friendly' | 'Complex' | 'Hard';
+  };
+}
+
+// Insight type styles for intelligence breakdown
+const insightTypeStyles = {
+  hot: 'bg-red-500/10 border-red-500/30 text-red-300',
+  rising: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
+  warning: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300',
+  info: 'bg-gray-500/10 border-gray-600/30 text-gray-300',
+};
+
+function IntelligenceTab({ opportunity, insights, signals }: IntelligenceTabProps) {
+  // Group insights by theme
+  const demandInsights = insights.filter(i => i.type === 'hot' || i.text.toLowerCase().includes('demand'));
+  const momentumInsights = insights.filter(i => i.type === 'rising' || i.text.toLowerCase().includes('momentum') || i.text.toLowerCase().includes('rising'));
+  const riskInsights = insights.filter(i => i.type === 'warning' || i.text.toLowerCase().includes('saturation') || i.text.toLowerCase().includes('competition'));
+  const otherInsights = insights.filter(i =>
+    !demandInsights.includes(i) &&
+    !momentumInsights.includes(i) &&
+    !riskInsights.includes(i)
+  );
+
+  return (
+    <div className="space-y-8">
+      {/* Signal Recap */}
+      <div>
+        <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+          Signal Recap
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              Demand
+            </div>
+            <div className="text-lg font-bold text-gray-100">{signals.demand}</div>
+          </div>
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              Momentum
+            </div>
+            <div className="text-lg font-bold text-gray-100">{signals.momentum}</div>
+          </div>
+          <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+            <div className="text-[9px] uppercase tracking-widest text-gray-600 font-medium mb-2">
+              Buildability
+            </div>
+            <div className="text-lg font-bold text-gray-100">{signals.buildability}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Intelligence Breakdown */}
+      {insights.length > 0 ? (
+        <>
+          {/* Demand Insights */}
+          {demandInsights.length > 0 && (
+            <div>
+              <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+                Demand Analysis
+              </h3>
+              <div className="space-y-3">
+                {demandInsights.map((insight) => (
+                  <div
+                    key={insight.id}
+                    className={`border rounded-lg p-4 ${insightTypeStyles[insight.type]}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0">{insight.icon}</span>
+                      <p className="text-sm leading-relaxed font-light">
+                        {insight.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Momentum Insights */}
+          {momentumInsights.length > 0 && (
+            <div>
+              <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+                Momentum Analysis
+              </h3>
+              <div className="space-y-3">
+                {momentumInsights.map((insight) => (
+                  <div
+                    key={insight.id}
+                    className={`border rounded-lg p-4 ${insightTypeStyles[insight.type]}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0">{insight.icon}</span>
+                      <p className="text-sm leading-relaxed font-light">
+                        {insight.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Risk/Saturation Insights */}
+          {riskInsights.length > 0 && (
+            <div>
+              <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+                Risk & Saturation
+              </h3>
+              <div className="space-y-3">
+                {riskInsights.map((insight) => (
+                  <div
+                    key={insight.id}
+                    className={`border rounded-lg p-4 ${insightTypeStyles[insight.type]}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0">{insight.icon}</span>
+                      <p className="text-sm leading-relaxed font-light">
+                        {insight.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Other Insights */}
+          {otherInsights.length > 0 && (
+            <div>
+              <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+                Additional Intelligence
+              </h3>
+              <div className="space-y-3">
+                {otherInsights.map((insight) => (
+                  <div
+                    key={insight.id}
+                    className={`border rounded-lg p-4 ${insightTypeStyles[insight.type]}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0">{insight.icon}</span>
+                      <p className="text-sm leading-relaxed font-light">
+                        {insight.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Supporting Evidence */}
+          <div>
+            <h3 className="text-sm uppercase tracking-widest text-gray-600 font-medium mb-4">
+              Supporting Evidence
+            </h3>
+            <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+              <p className="text-sm text-gray-400 leading-relaxed mb-4">
+                Intelligence insights are derived from cross-source signal analysis:
+              </p>
+              <ul className="space-y-2 text-sm text-gray-300">
+                {opportunity.data_sources.map((source, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-gray-600 mt-0.5">•</span>
+                    <span>
+                      <span className="font-medium text-gray-200">{source.name}</span>
+                      {' '}({source.source_type}) — {source.data_points} data points
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-6 text-center">
+          <p className="text-sm text-gray-500">
+            No intelligence insights available for this opportunity yet.
+          </p>
+          <p className="text-xs text-gray-600 mt-2">
+            Intelligence is generated for top-ranked opportunities with strong signals.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -142,20 +142,6 @@ function getBuildabilityLevel(score: number): 'Solo-friendly' | 'Complex' | 'Har
 }
 
 /**
- * Get days since a date string
- */
-function getDaysSince(dateStr: string): number {
-  try {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  } catch {
-    return Infinity;
-  }
-}
-
-/**
  * Generate builder questions and answers
  */
 export function generateBuilderQuestions(opportunity: Opportunity) {
@@ -286,7 +272,7 @@ export function generateInsights(opportunities: Opportunity[]): Insight[] {
   // Top 5 opportunities for insights
   const topOpps = opportunities.slice(0, 5);
 
-  topOpps.forEach((opp, index) => {
+  topOpps.forEach((opp) => {
     const signals = calculateSignals(opp.scoring_details);
 
     // Hot opportunity (high demand + rising momentum)
@@ -342,5 +328,20 @@ export function generateInsights(opportunities: Opportunity[]): Insight[] {
   });
 
   return insights.slice(0, 6); // Max 6 insights
+}
+
+/**
+ * Get the most relevant insight for a specific opportunity
+ * Used for contextual intelligence surfaces (cards, lanes, etc.)
+ */
+export function getInsightForOpportunity(opportunityId: string, insights: Insight[]): Insight | null {
+  return insights.find(insight => insight.opportunityId === opportunityId) || null;
+}
+
+/**
+ * Get insights for multiple opportunities (for drawer)
+ */
+export function getInsightsForOpportunity(opportunityId: string, insights: Insight[]): Insight[] {
+  return insights.filter(insight => insight.opportunityId === opportunityId);
 }
 
