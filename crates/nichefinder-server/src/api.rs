@@ -386,29 +386,154 @@ where
 async fn get_system_status(
     State(_state): State<Arc<AppState>>,
 ) -> Result<Json<SystemStatusResponse>, AppError> {
-    // TODO: Implement actual service health checks
+    // Perform health checks for all services in parallel
+    let http_services = vec![
+        check_service_health("nichefinder-server", 3001, "http://localhost:3001/health"),
+        check_service_health("peg-engine", 3007, "http://localhost:3007/health"),
+        check_service_health("credential-vault", 3005, "http://localhost:3005/health"),
+        check_service_health("PEG-Connector-Service", 9004, "http://localhost:9004/health"),
+        check_service_health("ChromaDB", 8000, "http://localhost:8000/api/v1/heartbeat"),
+    ];
+
+    let postgres_services = vec![
+        check_postgres_health("PostgreSQL (peg-engine)", 5436),
+        check_postgres_health("PostgreSQL (main)", 5433),
+    ];
+
+    let redis_services = vec![
+        check_redis_health("Redis (peg-engine)", 5379),
+        check_redis_health("Redis (main)", 6380),
+    ];
+
+    let (http_results, postgres_results, redis_results) = tokio::join!(
+        futures::future::join_all(http_services),
+        futures::future::join_all(postgres_services),
+        futures::future::join_all(redis_services),
+    );
+
+    let mut all_services = Vec::new();
+    all_services.extend(http_results);
+    all_services.extend(postgres_results);
+    all_services.extend(redis_results);
+
     Ok(Json(SystemStatusResponse {
-        services: vec![
-            ServiceStatus {
-                name: "nichefinder-server".to_string(),
-                port: 3001,
-                status: "healthy".to_string(),
-                uptime: Some(3600),
-            },
-            ServiceStatus {
-                name: "udm-core".to_string(),
-                port: 0,
-                status: "healthy".to_string(),
-                uptime: None,
-            },
-            ServiceStatus {
-                name: "peg-executor".to_string(),
-                port: 0,
-                status: "healthy".to_string(),
-                uptime: None,
-            },
-        ],
+        services: all_services,
     }))
+}
+
+/// Check health of an HTTP service
+async fn check_service_health(name: &str, port: u16, url: &str) -> ServiceStatus {
+    let start = Instant::now();
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .unwrap();
+
+    match client.get(url).send().await {
+        Ok(response) => {
+            let duration_ms = start.elapsed().as_millis() as u64;
+            let is_healthy = response.status().is_success();
+            ServiceStatus {
+                name: name.to_string(),
+                port,
+                status: if is_healthy { "healthy".to_string() } else { "unhealthy".to_string() },
+                response_time_ms: Some(duration_ms),
+                last_check: Some(chrono::Utc::now().to_rfc3339()),
+                error: if !is_healthy { Some(format!("HTTP {}", response.status())) } else { None },
+            }
+        }
+        Err(e) => {
+            ServiceStatus {
+                name: name.to_string(),
+                port,
+                status: "down".to_string(),
+                response_time_ms: None,
+                last_check: Some(chrono::Utc::now().to_rfc3339()),
+                error: Some(e.to_string()),
+            }
+        }
+    }
+}
+
+/// Check PostgreSQL health by attempting a connection
+async fn check_postgres_health(name: &str, port: u16) -> ServiceStatus {
+    let start = Instant::now();
+    let connection_string = format!("postgresql://postgres:postgres@localhost:{}/postgres", port);
+
+    match sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .connect(&connection_string)
+        .await
+    {
+        Ok(pool) => {
+            // Try a simple query
+            match sqlx::query("SELECT 1").fetch_one(&pool).await {
+                Ok(_) => {
+                    let duration_ms = start.elapsed().as_millis() as u64;
+                    ServiceStatus {
+                        name: name.to_string(),
+                        port,
+                        status: "healthy".to_string(),
+                        response_time_ms: Some(duration_ms),
+                        last_check: Some(chrono::Utc::now().to_rfc3339()),
+                        error: None,
+                    }
+                }
+                Err(e) => {
+                    ServiceStatus {
+                        name: name.to_string(),
+                        port,
+                        status: "unhealthy".to_string(),
+                        response_time_ms: None,
+                        last_check: Some(chrono::Utc::now().to_rfc3339()),
+                        error: Some(e.to_string()),
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            ServiceStatus {
+                name: name.to_string(),
+                port,
+                status: "down".to_string(),
+                response_time_ms: None,
+                last_check: Some(chrono::Utc::now().to_rfc3339()),
+                error: Some(e.to_string()),
+            }
+        }
+    }
+}
+
+/// Check Redis health by attempting a connection
+async fn check_redis_health(name: &str, port: u16) -> ServiceStatus {
+    let start = Instant::now();
+
+    // For Redis, we'll use a simple TCP connection check
+    // In a production system, you'd use a Redis client library
+    match tokio::net::TcpStream::connect(format!("localhost:{}", port)).await {
+        Ok(_) => {
+            let duration_ms = start.elapsed().as_millis() as u64;
+            ServiceStatus {
+                name: name.to_string(),
+                port,
+                status: "healthy".to_string(),
+                response_time_ms: Some(duration_ms),
+                last_check: Some(chrono::Utc::now().to_rfc3339()),
+                error: None,
+            }
+        }
+        Err(e) => {
+            ServiceStatus {
+                name: name.to_string(),
+                port,
+                status: "down".to_string(),
+                response_time_ms: None,
+                last_check: Some(chrono::Utc::now().to_rfc3339()),
+                error: Some(e.to_string()),
+            }
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -421,14 +546,16 @@ struct ServiceStatus {
     name: String,
     port: u16,
     status: String,
-    uptime: Option<u64>,
+    response_time_ms: Option<u64>,
+    last_check: Option<String>,
+    error: Option<String>,
 }
 
 /// Get system statistics
 async fn get_system_stats(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<SystemStatsResponse>, AppError> {
-    // Get total opportunities count
+    // Get total opportunities count from local database
     let total_opportunities = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM niche_opportunities"
     )
@@ -436,17 +563,74 @@ async fn get_system_stats(
     .await
     .unwrap_or(0);
 
+    // Get execution statistics from peg-engine
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .unwrap();
+
+    let (total_executions, total_workflows, total_artifacts, last_execution) =
+        match client.get("http://localhost:3007/api/v1/executions").send().await {
+            Ok(response) => {
+                if let Ok(data) = response.json::<serde_json::Value>().await {
+                    let empty_vec = vec![];
+                    let executions = data["executions"].as_array().unwrap_or(&empty_vec);
+                    let total_executions = executions.len() as u64;
+
+                    // Get last execution timestamp
+                    let last_execution = executions
+                        .first()
+                        .and_then(|e| e["startTime"].as_str())
+                        .map(|s| s.to_string());
+
+                    // Count unique workflows
+                    let mut workflow_ids = std::collections::HashSet::new();
+                    for exec in executions {
+                        if let Some(workflow_id) = exec["workflowId"].as_str() {
+                            workflow_ids.insert(workflow_id);
+                        }
+                    }
+                    let total_workflows = workflow_ids.len() as u64;
+
+                    // Count total artifacts across all executions
+                    let mut total_artifacts = 0u64;
+                    for exec in executions {
+                        if let Some(exec_id) = exec["id"].as_str() {
+                            if let Ok(artifacts_response) = client
+                                .get(format!("http://localhost:3007/api/v1/executions/{}/artifacts", exec_id))
+                                .send()
+                                .await
+                            {
+                                if let Ok(artifacts_data) = artifacts_response.json::<serde_json::Value>().await {
+                                    if let Some(artifacts) = artifacts_data.as_array() {
+                                        total_artifacts += artifacts.len() as u64;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    (total_executions, total_workflows, total_artifacts, last_execution)
+                } else {
+                    (0, 0, 0, None)
+                }
+            }
+            Err(_) => (0, 0, 0, None),
+        };
+
     Ok(Json(SystemStatsResponse {
-        total_workflows: 3,
-        total_artifacts: 15,
+        total_workflows,
+        total_executions,
+        total_artifacts,
         total_opportunities: total_opportunities as u64,
-        last_execution: Some("2024-12-12T10:30:00Z".to_string()),
+        last_execution,
     }))
 }
 
 #[derive(Debug, Serialize)]
 struct SystemStatsResponse {
     total_workflows: u64,
+    total_executions: u64,
     total_artifacts: u64,
     total_opportunities: u64,
     last_execution: Option<String>,

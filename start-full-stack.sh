@@ -5,6 +5,9 @@
 
 set -e
 
+# Get absolute path to project root
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -16,8 +19,8 @@ echo "🚀 Starting NicheFinder Full Stack..."
 echo ""
 
 # Create required directories
-mkdir -p logs
-mkdir -p crates/nichefinder-server/data
+mkdir -p "$PROJECT_ROOT/logs"
+mkdir -p "$PROJECT_ROOT/crates/nichefinder-server/data"
 
 # Function to check if port is in use
 check_port() {
@@ -55,9 +58,9 @@ start_service() {
         return 0
     else
         echo -e "${BLUE}🔧 Starting $name (port $port)...${NC}"
-        eval "$command > logs/$log_file 2>&1 &"
+        eval "$command > \"$PROJECT_ROOT/logs/$log_file\" 2>&1 &"
         local pid=$!
-        echo "$pid" > $pid_file
+        echo "$pid" > "$PROJECT_ROOT/$pid_file"
         echo "   PID: $pid"
 
         # Wait for service to be ready
@@ -124,7 +127,7 @@ if [ -f deps/credential-vault/.env ]; then
         3005 \
         "pnpm dev" \
         "vault.log" \
-        "../../.vault.pid" \
+        ".vault.pid" \
         15
     cd ../..
 else
@@ -146,7 +149,7 @@ if [ -f deps/peg-engine/.env ]; then
         3007 \
         "npm run dev" \
         "peg-engine.log" \
-        "../../.peg-engine.pid" \
+        ".peg-engine.pid" \
         20
     cd ../..
 else
@@ -167,7 +170,7 @@ start_service \
     9004 \
     "cargo run --release --bin peg-connector-service -- --config config.yaml" \
     "connector.log" \
-    "../../.connector.pid" \
+    ".connector.pid" \
     30
 cd ../..
 echo ""
@@ -201,7 +204,7 @@ start_service \
     5173 \
     "npm run dev" \
     "frontend.log" \
-    "../.frontend.pid" \
+    ".frontend.pid" \
     15
 cd ..
 echo ""
