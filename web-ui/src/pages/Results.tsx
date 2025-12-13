@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { ErrorMessage } from '../components/shared/ErrorMessage';
+import { OpportunityDrawer } from '../components/results/OpportunityDrawer';
 
 interface DataSource {
   name: string;
@@ -40,6 +41,7 @@ export function Results() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
 
   const fetchOpportunities = async () => {
     try {
@@ -112,7 +114,11 @@ export function Results() {
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {opportunities.map((opp, index) => (
-              <tr key={opp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <tr
+                key={opp.id}
+                onClick={() => setSelectedOpportunity(opp)}
+                className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                   {index + 1}
                 </td>
@@ -145,6 +151,14 @@ export function Results() {
           </tbody>
         </table>
       </div>
+
+      {/* Opportunity Details Drawer */}
+      {selectedOpportunity && (
+        <OpportunityDrawer
+          opportunity={selectedOpportunity}
+          onClose={() => setSelectedOpportunity(null)}
+        />
+      )}
     </div>
   );
 }
