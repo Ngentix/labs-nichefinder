@@ -65,9 +65,10 @@
 ### Phase 3.3: Results Tab Implementation ✅ COMPLETE
 - Built Results page with sortable table
 - Displays 50 opportunities with scoring details
-- Shows data sources for each opportunity
+- Shows data sources for each opportunity (HACS, GitHub, YouTube)
 - Fixed frontend-backend data structure integration
 - Successfully tested with real data from database
+- YouTube data source showing as "YouTube (general)" for all opportunities
 
 ### Phase 3.4: Infrastructure Startup Scripts ✅ COMPLETE
 - Created `start-demo.sh` - Starts ALL 6 services + infrastructure
@@ -129,7 +130,7 @@ See `FEATURE_SERVICE_CALL_TRACE.md` for detailed specification.
 
 ## 🔮 Future Enhancements
 
-### Opportunity Descriptions (AI-Generated)
+### 1. Opportunity Descriptions (AI-Generated)
 **Goal:** Add human-readable descriptions to each opportunity explaining what it is and why it's valuable.
 
 **LLM Options:**
@@ -185,6 +186,45 @@ indicating strong user interest and reliable maintenance.
 6. Add expandable detail view
 
 **Timeline:** 2-3 days (future phase)
+
+**Specification:** See `FEATURE_OPPORTUNITY_DESCRIPTIONS.md`
+
+---
+
+### 2. Additional Data Sources
+**Goal:** Expand market intelligence with more diverse data sources.
+
+**Proposed Sources:**
+1. **Google Trends** (HIGHEST PRIORITY) ⭐
+   - Search interest over time
+   - Market demand and growth trends
+   - Geographic distribution
+   - Rising vs. declining trends
+
+2. **HackerNews**
+   - Tech community discussions
+   - Developer interest signals
+   - Real-world use cases
+
+3. **Home Assistant Community Forum**
+   - Official forum activity
+   - Integration-specific threads
+   - User questions and solutions
+
+4. **Reddit (r/homeassistant)**
+   - Community recommendations
+   - User experiences
+   - Integration comparisons
+
+**Benefits:**
+- More comprehensive market validation
+- Better trend analysis
+- Real-world user pain points
+- Enhanced scoring algorithm
+
+**Timeline:** 3-5 days (future phase)
+
+**Specification:** See `FEATURE_ADDITIONAL_DATA_SOURCES.md`
 
 ---
 

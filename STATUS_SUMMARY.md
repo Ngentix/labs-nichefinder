@@ -1,7 +1,7 @@
 # NicheFinder Platform - Current Status Summary
 
-**Date:** 2025-12-12  
-**Commit:** `2d3ec88`  
+**Date:** 2025-12-13
+**Commit:** `67be174`
 **Repository:** https://github.com/Ngentix/labs-nichefinder
 
 ---
@@ -30,6 +30,7 @@
 - ✅ Shared components (StatusBadge, LoadingSpinner, ErrorMessage, CodeViewer)
 - ✅ API client wrapper with TypeScript types
 - ✅ Results tab displaying 50 opportunities
+- ✅ YouTube data source showing in Results tab (as "YouTube (general)")
 
 **Services Running:**
 1. **Infrastructure** (Docker): PostgreSQL (5436, 5433), Redis (5379, 6380), ChromaDB (8000)
@@ -99,7 +100,7 @@
 
 ## 🔮 Future Enhancements (Post-Phase 3)
 
-### Opportunity Descriptions (AI-Generated)
+### 1. Opportunity Descriptions (AI-Generated)
 **Goal:** Add human-readable descriptions to each opportunity
 
 **LLM Options:**
@@ -125,6 +126,29 @@ indicating strong user interest and reliable maintenance.
 ```
 
 **Timeline:** 2-3 days (future phase)
+
+**Specification:** See `FEATURE_OPPORTUNITY_DESCRIPTIONS.md`
+
+---
+
+### 2. Additional Data Sources
+**Goal:** Expand market intelligence with more data sources
+
+**Proposed Sources:**
+1. **Google Trends** (HIGHEST PRIORITY) - Search interest over time, market demand trends
+2. **HackerNews** - Tech community discussions and engagement
+3. **Home Assistant Community Forum** - Official forum activity and discussions
+4. **Reddit (r/homeassistant)** - Community recommendations and experiences
+
+**Benefits:**
+- More comprehensive market validation
+- Better trend analysis (rising vs. declining integrations)
+- Real-world user experiences and pain points
+- Enhanced scoring algorithm with diverse signals
+
+**Timeline:** 3-5 days (future phase)
+
+**Specification:** See `FEATURE_ADDITIONAL_DATA_SOURCES.md`
 
 ---
 
