@@ -10,6 +10,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use std::sync::Arc;
+use std::time::Instant;
 use tower_http::cors::{Any, CorsLayer};
 
 /// Application state
@@ -86,17 +87,180 @@ struct OpportunitiesResponse {
     opportunities: Vec<nichefinder_core::NicheOpportunity>,
 }
 
-/// Trigger a manual analysis
+/// Request for analysis trigger
+#[derive(Debug, Deserialize)]
+struct AnalysisRequest {
+    execution_id: String,
+}
+
+/// Trigger analysis from workflow execution artifacts
 async fn trigger_analysis(
     State(state): State<Arc<AppState>>,
+    Json(request): Json<AnalysisRequest>,
 ) -> Result<Json<AnalysisResponse>, AppError> {
-    // TODO: Implement actual analysis trigger
-    // For now, return a placeholder response
-    
+    tracing::info!("Starting analysis for execution: {}", request.execution_id);
+
+    // Fetch artifacts from peg-engine
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    let client = reqwest::Client::new();
+    let artifacts_url = format!(
+        "{}/api/v1/executions/{}/artifacts",
+        peg_engine_url, request.execution_id
+    );
+
+    // Log and execute HTTP call to fetch artifacts
+    let start = Instant::now();
+    let response = client
+        .get(&artifacts_url)
+        .send()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to fetch artifacts: {}", e))?;
+
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %artifacts_url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        "Fetching artifacts from peg-engine"
+    );
+
+    let artifacts: Vec<ArtifactMetadata> = response
+        .json()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to parse artifacts response: {}", e))?;
+
+    tracing::info!("Found {} artifacts", artifacts.len());
+
+    // Find the three required artifacts
+    let hacs_artifact = artifacts
+        .iter()
+        .find(|a| a.step_id == "fetch_hacs_integrations")
+        .ok_or_else(|| anyhow::anyhow!("HACS artifact not found"))?;
+
+    let github_artifact = artifacts
+        .iter()
+        .find(|a| a.step_id == "search_github_repos")
+        .ok_or_else(|| anyhow::anyhow!("GitHub artifact not found"))?;
+
+    let youtube_artifact = artifacts
+        .iter()
+        .find(|a| a.step_id == "search_youtube_videos")
+        .ok_or_else(|| anyhow::anyhow!("YouTube artifact not found"))?;
+
+    // Download artifacts to temp files
+    let temp_dir = std::env::temp_dir();
+    let hacs_path = temp_dir.join(format!("hacs_{}.json", request.execution_id));
+    let github_path = temp_dir.join(format!("github_{}.json", request.execution_id));
+    let youtube_path = temp_dir.join(format!("youtube_{}.json", request.execution_id));
+
+    download_artifact(&client, &peg_engine_url, &hacs_artifact.id, &hacs_path).await?;
+    download_artifact(&client, &peg_engine_url, &github_artifact.id, &github_path).await?;
+    download_artifact(&client, &peg_engine_url, &youtube_artifact.id, &youtube_path).await?;
+
+    tracing::info!("Downloaded all artifacts to temp directory");
+
+    // Run analysis
+    let analyzer = nichefinder_core::IntegrationAnalyzer::new();
+    let result = analyzer
+        .analyze_from_files(
+            hacs_path.to_str().unwrap(),
+            github_path.to_str().unwrap(),
+            youtube_path.to_str().unwrap(),
+        )
+        .map_err(|e| anyhow::anyhow!("Analysis failed: {}", e))?;
+
+    tracing::info!(
+        "Analysis complete: {} opportunities found from {} candidates",
+        result.opportunities.len(),
+        result.metadata.total_candidates
+    );
+
+    // Save opportunities to database
+    for opportunity in &result.opportunities {
+        crate::db::save_opportunity(&state.db_pool, opportunity)
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to save opportunity: {}", e))?;
+    }
+
+    // Clean up temp files
+    let _ = tokio::fs::remove_file(&hacs_path).await;
+    let _ = tokio::fs::remove_file(&github_path).await;
+    let _ = tokio::fs::remove_file(&youtube_path).await;
+
     Ok(Json(AnalysisResponse {
-        status: "queued".to_string(),
-        message: "Analysis job queued (placeholder)".to_string(),
+        status: "completed".to_string(),
+        message: format!(
+            "Analysis completed: {} opportunities found from {} candidates",
+            result.opportunities.len(),
+            result.metadata.total_candidates
+        ),
+        opportunities_found: result.opportunities.len(),
+        execution_id: request.execution_id,
     }))
+}
+
+/// Helper function to download an artifact
+async fn download_artifact(
+    client: &reqwest::Client,
+    peg_engine_url: &str,
+    artifact_id: &str,
+    dest_path: &std::path::Path,
+) -> Result<(), anyhow::Error> {
+    let download_url = format!(
+        "{}/api/v1/artifacts/{}/download",
+        peg_engine_url, artifact_id
+    );
+
+    // Log and execute HTTP call to download artifact
+    let start = Instant::now();
+    let response = client
+        .get(&download_url)
+        .send()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to download artifact {}: {}", artifact_id, e))?;
+
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %download_url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        artifact_id = %artifact_id,
+        "Downloading artifact from peg-engine"
+    );
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to read artifact bytes: {}", e))?;
+
+    tokio::fs::write(dest_path, bytes)
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to write artifact to file: {}", e))?;
+
+    Ok(())
+}
+
+/// Artifact metadata from peg-engine
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ArtifactMetadata {
+    id: String,
+    step_id: String,
+    name: String,
 }
 
 /// Response for analysis trigger
@@ -104,6 +268,8 @@ async fn trigger_analysis(
 struct AnalysisResponse {
     status: String,
     message: String,
+    opportunities_found: usize,
+    execution_id: String,
 }
 
 /// API error type
@@ -302,15 +468,30 @@ async fn get_executions(
 
     let url = format!("{}/api/v1/executions", peg_engine_url);
 
+    // Log and execute HTTP call
     let client = reqwest::Client::new();
+    let start = Instant::now();
     let response = client
         .get(&url)
         .send()
         .await
         .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch executions from peg-engine: {}", e)))?;
 
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        "Fetching executions from peg-engine"
+    );
+
     if !response.status().is_success() {
-        let status = response.status();
         let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(AppError(anyhow::anyhow!("peg-engine returned error {}: {}", status, error_text)));
     }
@@ -394,16 +575,31 @@ async fn get_execution_trace(
 
     let url = format!("{}/api/v1/executions/{}/trace", peg_engine_url, id);
 
-    // Make request to peg-engine
+    // Log and execute HTTP call
     let client = reqwest::Client::new();
+    let start = Instant::now();
     let response = client
         .get(&url)
         .send()
         .await
         .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch trace from peg-engine: {}", e)))?;
 
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        execution_id = %id,
+        "Fetching execution trace from peg-engine"
+    );
+
     if !response.status().is_success() {
-        let status = response.status();
         let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(AppError(anyhow::anyhow!("peg-engine returned error {}: {}", status, error_text)));
     }
@@ -427,7 +623,7 @@ async fn get_artifacts(
     // TODO: Load artifacts from filesystem/database
     Ok(Json(ArtifactsResponse {
         artifacts: vec![
-            ArtifactMetadata {
+            ArtifactResponse {
                 id: "artifact-1".to_string(),
                 filename: "hacs_integrations.json".to_string(),
                 size: 1024000,
@@ -442,11 +638,11 @@ async fn get_artifacts(
 
 #[derive(Debug, Serialize)]
 struct ArtifactsResponse {
-    artifacts: Vec<ArtifactMetadata>,
+    artifacts: Vec<ArtifactResponse>,
 }
 
 #[derive(Debug, Serialize)]
-struct ArtifactMetadata {
+struct ArtifactResponse {
     id: String,
     filename: String,
     size: u64,
@@ -463,7 +659,7 @@ async fn get_artifact(
 ) -> Result<Json<ArtifactDetailResponse>, AppError> {
     // TODO: Load artifact content from filesystem
     Ok(Json(ArtifactDetailResponse {
-        metadata: ArtifactMetadata {
+        metadata: ArtifactResponse {
             id: id.clone(),
             filename: "hacs_integrations.json".to_string(),
             size: 1024000,
@@ -480,7 +676,7 @@ async fn get_artifact(
 
 #[derive(Debug, Serialize)]
 struct ArtifactDetailResponse {
-    metadata: ArtifactMetadata,
+    metadata: ArtifactResponse,
     content: serde_json::Value,
 }
 

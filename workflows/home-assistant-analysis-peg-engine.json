@@ -41,6 +41,14 @@
       "config": {
         "connector_id": "youtube"
       }
+    },
+    {
+      "id": "analysis_service",
+      "name": "Analysis Service",
+      "kind": "Service",
+      "config": {
+        "service_type": "http"
+      }
     }
   ],
   "steps": [
@@ -90,6 +98,28 @@
       },
       "dependencies": [
         "fetch_hacs_integrations"
+      ],
+      "when": "auto"
+    },
+    {
+      "id": "analyze_opportunities",
+      "name": "Analyze Integration Opportunities",
+      "verb": "http_request",
+      "actor": "analysis_service",
+      "inputs": {
+        "url": "http://localhost:3001/api/analyze",
+        "method": "POST",
+        "body": {
+          "execution_id": "{{ execution.id }}"
+        }
+      },
+      "outputs": {
+        "analysis_result": "result"
+      },
+      "dependencies": [
+        "fetch_hacs_integrations",
+        "search_github_repos",
+        "search_youtube_videos"
       ],
       "when": "auto"
     }
