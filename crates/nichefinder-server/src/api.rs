@@ -41,6 +41,7 @@ pub fn create_router(db_pool: SqlitePool) -> Router {
         // Execution endpoints
         .route("/api/executions", get(get_executions))
         .route("/api/executions/{id}", get(get_execution))
+        .route("/api/executions/{id}/trace", get(get_execution_trace))
         // Artifact endpoints
         .route("/api/artifacts", get(get_artifacts))
         .route("/api/artifacts/{id}", get(get_artifact))
@@ -359,6 +360,39 @@ struct ExecutionLog {
     timestamp: String,
     level: String,
     message: String,
+}
+
+/// Get execution trace (proxy to peg-engine)
+async fn get_execution_trace(
+    State(_state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    // Get peg-engine URL from environment or use default
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    let url = format!("{}/api/executions/{}/trace", peg_engine_url, id);
+
+    // Make request to peg-engine
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch trace from peg-engine: {}", e)))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(AppError(anyhow::anyhow!("peg-engine returned error {}: {}", status, error_text)));
+    }
+
+    let trace_data = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse trace response: {}", e)))?;
+
+    Ok(Json(trace_data))
 }
 
 // ============================================================================

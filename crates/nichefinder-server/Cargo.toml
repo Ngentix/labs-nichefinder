@@ -32,6 +32,9 @@ futures.workspace = true
 # Database
 sqlx = { workspace = true, features = ["sqlite"] }
 
+# HTTP client
+reqwest.workspace = true
+
 # Scheduling
 tokio-cron-scheduler = "0.13"
 

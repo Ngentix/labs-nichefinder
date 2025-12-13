@@ -78,6 +78,30 @@ export interface ArtifactMetadata {
   mime_type: string;
 }
 
+export interface TraceEntry {
+  id: number;
+  executionId: string;
+  jobId: string | null;
+  stepId: string | null;
+  timestamp: string;
+  serviceFrom: string;
+  serviceTo: string;
+  method: string;
+  url: string;
+  requestHeaders: Record<string, any> | null;
+  requestBody: any;
+  responseStatus: number | null;
+  responseHeaders: Record<string, any> | null;
+  responseBody: any;
+  durationMs: number | null;
+  error: string | null;
+}
+
+export interface ExecutionTrace {
+  executionId: string;
+  traces: TraceEntry[];
+}
+
 export interface TransformationPreview {
   raw: any;
   normalized: any;

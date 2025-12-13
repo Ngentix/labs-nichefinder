@@ -101,6 +101,10 @@ export class ApiClient {
     return this.request(`/api/executions/${id}/status`);
   }
 
+  async getExecutionTrace(id: string): Promise<any> {
+    return this.request(`/api/executions/${id}/trace`);
+  }
+
   // Artifacts
   async getArtifacts(): Promise<any[]> {
     return this.request('/api/artifacts');

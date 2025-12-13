@@ -15,12 +15,30 @@ NC='\033[0m' # No Color
 echo "🚀 Starting NicheFinder Full Stack..."
 echo ""
 
-# Create logs directory
+# Create required directories
 mkdir -p logs
+mkdir -p crates/nichefinder-server/data
 
 # Function to check if port is in use
 check_port() {
     lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null 2>&1
+}
+
+# Function to wait for port to be ready
+wait_for_port() {
+    local port=$1
+    local max_wait=${2:-30}
+    local count=0
+
+    while ! check_port $port && [ $count -lt $max_wait ]; do
+        sleep 1
+        count=$((count + 1))
+    done
+
+    if [ $count -ge $max_wait ]; then
+        return 1
+    fi
+    return 0
 }
 
 # Function to start a service
@@ -30,15 +48,26 @@ start_service() {
     local command=$3
     local log_file=$4
     local pid_file=$5
-    
+    local wait_time=${6:-10}
+
     if check_port $port; then
         echo -e "${YELLOW}⚠️  $name already running on port $port${NC}"
+        return 0
     else
         echo -e "${BLUE}🔧 Starting $name (port $port)...${NC}"
         eval "$command > logs/$log_file 2>&1 &"
         local pid=$!
         echo "$pid" > $pid_file
         echo "   PID: $pid"
+
+        # Wait for service to be ready
+        if wait_for_port $port $wait_time; then
+            echo -e "${GREEN}   ✅ $name is ready${NC}"
+            return 0
+        else
+            echo -e "${RED}   ❌ $name failed to start (check logs/$log_file)${NC}"
+            return 1
+        fi
     fi
 }
 
@@ -95,9 +124,9 @@ if [ -f deps/credential-vault/.env ]; then
         3005 \
         "pnpm dev" \
         "vault.log" \
-        "../../.vault.pid"
+        "../../.vault.pid" \
+        15
     cd ../..
-    sleep 3
 else
     echo -e "${YELLOW}⚠️  Skipping credential-vault (no .env file)${NC}"
 fi
@@ -117,9 +146,9 @@ if [ -f deps/peg-engine/.env ]; then
         3007 \
         "npm run dev" \
         "peg-engine.log" \
-        "../../.peg-engine.pid"
+        "../../.peg-engine.pid" \
+        20
     cd ../..
-    sleep 3
 else
     echo -e "${YELLOW}⚠️  Skipping peg-engine (no .env file)${NC}"
 fi
@@ -138,9 +167,9 @@ start_service \
     9004 \
     "cargo run --release --bin peg-connector-service -- --config config.yaml" \
     "connector.log" \
-    "../../.connector.pid"
+    "../../.connector.pid" \
+    30
 cd ../..
-sleep 5
 echo ""
 
 # ============================================
@@ -153,10 +182,10 @@ echo ""
 start_service \
     "NicheFinder Backend" \
     3001 \
-    "cd crates/nichefinder-server && cargo run --release" \
+    "cd crates/nichefinder-server && PORT=3001 DATABASE_URL='sqlite://data/nichefinder.db' cargo run --release" \
     "backend.log" \
-    ".backend.pid"
-sleep 3
+    ".backend.pid" \
+    20
 echo ""
 
 # ============================================
@@ -172,9 +201,9 @@ start_service \
     5173 \
     "npm run dev" \
     "frontend.log" \
-    "../.frontend.pid"
+    "../.frontend.pid" \
+    15
 cd ..
-sleep 3
 echo ""
 
 # ============================================
