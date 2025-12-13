@@ -18,7 +18,7 @@ export function WorkflowExecution() {
 
   const fetchWorkflows = async () => {
     try {
-      const data = await apiClient.getWorkflows();
+      const data: any = await apiClient.getWorkflows();
       setWorkflows(data.workflows || []);
       if (data.workflows && data.workflows.length > 0) {
         setSelectedWorkflow(data.workflows[0].id);
@@ -32,11 +32,11 @@ export function WorkflowExecution() {
     try {
       if (id) {
         // Fetch specific execution by ID
-        const data = await apiClient.getExecution(id);
+        const data: any = await apiClient.getExecution(id);
         setExecution(data.execution);
       } else {
         // Fetch latest execution
-        const data = await apiClient.getExecutions();
+        const data: any = await apiClient.getExecutions();
         const executions = data.executions || [];
 
         if (executions.length === 0) {

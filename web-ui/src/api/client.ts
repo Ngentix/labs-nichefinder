@@ -56,7 +56,7 @@ export class ApiClient {
     if (params?.max_results) query.set('max_results', params.max_results.toString());
 
     const endpoint = `/api/opportunities${query.toString() ? `?${query}` : ''}`;
-    const response = await this.request(endpoint);
+    const response: any = await this.request(endpoint);
     return response.opportunities || [];
   }
 
@@ -82,6 +82,10 @@ export class ApiClient {
     return this.request(`/api/workflows/${id}/execute`, {
       method: 'POST',
     });
+  }
+
+  async getWorkflowDefinition(id: string): Promise<any> {
+    return this.request(`/api/workflows/${id}/definition`);
   }
 
   // Executions

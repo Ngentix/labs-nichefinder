@@ -8,11 +8,10 @@ interface CodeViewerProps {
   showLineNumbers?: boolean;
 }
 
-export function CodeViewer({ 
-  code, 
-  language = 'json', 
+export function CodeViewer({
+  code,
   maxHeight = '400px',
-  showLineNumbers = true 
+  showLineNumbers = true
 }: CodeViewerProps) {
   const [copied, setCopied] = useState(false);
 
@@ -39,8 +38,8 @@ export function CodeViewer({
           )}
         </button>
       </div>
-      
-      <div 
+
+      <div
         className="bg-gray-900 rounded-lg overflow-auto code-viewer"
         style={{ maxHeight }}
       >

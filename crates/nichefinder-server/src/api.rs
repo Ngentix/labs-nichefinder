@@ -58,6 +58,7 @@ pub fn create_router(db_pool: SqlitePool) -> Router {
         // Workflow endpoints
         .route("/api/workflows", get(get_workflows))
         .route("/api/workflows/{id}/execute", post(execute_workflow))
+        .route("/api/workflows/{id}/definition", get(get_workflow_definition))
         // Execution endpoints
         .route("/api/executions", get(get_executions))
         .route("/api/executions/{id}", get(get_execution))
@@ -815,6 +816,39 @@ struct ExecutionResponse {
     message: String,
 }
 
+/// Get workflow definition (YAML/JSON)
+async fn get_workflow_definition(
+    State(_state): State<Arc<AppState>>,
+    Path(_id): Path<String>,
+) -> Result<Json<WorkflowDefinitionResponse>, AppError> {
+    // Read the static workflow definition file
+    let workflow_path = "workflows/home-assistant-analysis.yaml";
+
+    let definition = tokio::fs::read_to_string(workflow_path)
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to read workflow file: {}", e)))?;
+
+    tracing::info!(
+        "Serving static workflow definition from file: {}",
+        workflow_path
+    );
+
+    Ok(Json(WorkflowDefinitionResponse {
+        id: "home-assistant-niche-analysis".to_string(),
+        name: "Home Assistant Niche Discovery Analysis".to_string(),
+        format: "yaml".to_string(),
+        definition,
+    }))
+}
+
+#[derive(Debug, Serialize)]
+struct WorkflowDefinitionResponse {
+    id: String,
+    name: String,
+    format: String,
+    definition: String,
+}
+
 // ============================================================================
 // Execution Endpoints
 // ============================================================================
@@ -1078,24 +1112,102 @@ struct AggregatedServiceCall {
 // Artifact Endpoints
 // ============================================================================
 
-/// Get all artifacts
+/// Get all artifacts from the latest execution
 async fn get_artifacts(
     State(_state): State<Arc<AppState>>,
 ) -> Result<Json<ArtifactsResponse>, AppError> {
-    // TODO: Load artifacts from filesystem/database
-    Ok(Json(ArtifactsResponse {
-        artifacts: vec![
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    // First, get the latest execution
+    let executions_url = format!("{}/api/v1/executions", peg_engine_url);
+    let client = reqwest::Client::new();
+
+    let executions_response = client
+        .get(&executions_url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch executions: {}", e)))?;
+
+    if !executions_response.status().is_success() {
+        return Err(AppError(anyhow::anyhow!("Failed to fetch executions from peg-engine")));
+    }
+
+    let executions_data: serde_json::Value = executions_response
+        .json()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse executions: {}", e)))?;
+
+    let executions = executions_data["executions"]
+        .as_array()
+        .ok_or_else(|| AppError(anyhow::anyhow!("Invalid executions response")))?;
+
+    if executions.is_empty() {
+        return Ok(Json(ArtifactsResponse {
+            artifacts: vec![],
+        }));
+    }
+
+    // Get the latest execution ID
+    let latest_execution_id = executions[0]["id"]
+        .as_str()
+        .ok_or_else(|| AppError(anyhow::anyhow!("Invalid execution ID")))?;
+
+    // Fetch artifacts for this execution
+    let artifacts_url = format!("{}/api/v1/executions/{}/artifacts", peg_engine_url, latest_execution_id);
+
+    let start = Instant::now();
+    let artifacts_response = client
+        .get(&artifacts_url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to fetch artifacts: {}", e)))?;
+
+    let status = artifacts_response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %artifacts_url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        "Fetching artifacts from peg-engine"
+    );
+
+    if !artifacts_response.status().is_success() {
+        return Err(AppError(anyhow::anyhow!("Failed to fetch artifacts from peg-engine")));
+    }
+
+    let artifacts_data: Vec<serde_json::Value> = artifacts_response
+        .json()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to parse artifacts: {}", e)))?;
+
+    // Transform peg-engine artifacts to our format
+    let artifacts: Vec<ArtifactResponse> = artifacts_data
+        .iter()
+        .map(|artifact| {
+            let size = artifact["size"]
+                .as_i64()
+                .or_else(|| artifact["size"].as_str().and_then(|s| s.parse().ok()))
+                .unwrap_or(0) as u64;
+
             ArtifactResponse {
-                id: "artifact-1".to_string(),
-                filename: "hacs_integrations.json".to_string(),
-                size: 1024000,
-                source: "hacs-connector".to_string(),
-                execution_id: "exec-123".to_string(),
-                created_at: "2024-12-12T10:30:00Z".to_string(),
-                mime_type: "application/json".to_string(),
-            },
-        ],
-    }))
+                id: artifact["id"].as_str().unwrap_or("").to_string(),
+                filename: artifact["name"].as_str().unwrap_or("").to_string(),
+                size,
+                source: artifact["stepId"].as_str().unwrap_or("").to_string(),
+                execution_id: artifact["executionId"].as_str().unwrap_or("").to_string(),
+                created_at: artifact["createdAt"].as_str().unwrap_or("").to_string(),
+                mime_type: artifact["mimeType"].as_str().unwrap_or("application/json").to_string(),
+            }
+        })
+        .collect();
+
+    Ok(Json(ArtifactsResponse { artifacts }))
 }
 
 #[derive(Debug, Serialize)]
@@ -1114,25 +1226,76 @@ struct ArtifactResponse {
     mime_type: String,
 }
 
-/// Get a specific artifact
+/// Get a specific artifact with its content
 async fn get_artifact(
     State(_state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> Result<Json<ArtifactDetailResponse>, AppError> {
-    // TODO: Load artifact content from filesystem
-    Ok(Json(ArtifactDetailResponse {
-        metadata: ArtifactResponse {
+    let peg_engine_url = std::env::var("PEG_ENGINE_URL")
+        .unwrap_or_else(|_| "http://localhost:3007".to_string());
+
+    // Download artifact content
+    let download_url = format!("{}/api/v1/artifacts/{}/download", peg_engine_url, id);
+    let client = reqwest::Client::new();
+
+    let start = Instant::now();
+    let response = client
+        .get(&download_url)
+        .send()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to download artifact: {}", e)))?;
+
+    let status = response.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+
+    tracing::info!(
+        service_call = true,
+        service_from = "nichefinder-server",
+        service_to = "peg-engine",
+        method = "GET",
+        url = %download_url,
+        status = status,
+        duration_ms = duration_ms as u64,
+        artifact_id = %id,
+        "Downloading artifact from peg-engine"
+    );
+
+    if !response.status().is_success() {
+        return Err(AppError(anyhow::anyhow!("Failed to download artifact from peg-engine")));
+    }
+
+    // Get content as bytes first
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| AppError(anyhow::anyhow!("Failed to read artifact content: {}", e)))?;
+
+    // Try to parse as JSON
+    let content: serde_json::Value = serde_json::from_slice(&bytes)
+        .unwrap_or_else(|_| serde_json::json!({
+            "error": "Failed to parse artifact as JSON",
+            "raw_size": bytes.len()
+        }));
+
+    // For metadata, we need to fetch the artifact list and find this one
+    // This is a simplified version - in production you might want to cache this
+    let artifacts_response = get_artifacts(State(_state)).await?;
+    let metadata = artifacts_response.0.artifacts
+        .into_iter()
+        .find(|a| a.id == id)
+        .unwrap_or_else(|| ArtifactResponse {
             id: id.clone(),
-            filename: "hacs_integrations.json".to_string(),
-            size: 1024000,
-            source: "hacs-connector".to_string(),
-            execution_id: "exec-123".to_string(),
-            created_at: "2024-12-12T10:30:00Z".to_string(),
+            filename: "unknown".to_string(),
+            size: bytes.len() as u64,
+            source: "unknown".to_string(),
+            execution_id: "unknown".to_string(),
+            created_at: chrono::Utc::now().to_rfc3339(),
             mime_type: "application/json".to_string(),
-        },
-        content: serde_json::json!({
-            "integrations": []
-        }),
+        });
+
+    Ok(Json(ArtifactDetailResponse {
+        metadata,
+        content,
     }))
 }
 
