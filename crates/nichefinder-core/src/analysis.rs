@@ -197,8 +197,10 @@ impl IntegrationAnalyzer {
             });
         }
 
-        // YouTube source
+        // YouTube source - always include to show data was collected
+        // Even if no exact match, shows general market intelligence
         if !integration.sources.youtube_video_ids.is_empty() {
+            // Exact match found
             sources.push(DataSource {
                 name: "YouTube".to_string(),
                 source_type: DataSourceType::Other("YouTube".to_string()),
@@ -207,6 +209,19 @@ impl IntegrationAnalyzer {
                 metadata: serde_json::json!({
                     "video_ids": integration.sources.youtube_video_ids,
                     "mention_count": integration.youtube_mentions,
+                    "match_type": "exact",
+                }),
+            });
+        } else {
+            // No exact match, but show general market data was collected
+            sources.push(DataSource {
+                name: "YouTube (general)".to_string(),
+                source_type: DataSourceType::Other("YouTube".to_string()),
+                collected_at: Utc::now(),
+                data_points: 0,
+                metadata: serde_json::json!({
+                    "match_type": "general",
+                    "note": "General Home Assistant market data collected, no integration-specific match",
                 }),
             });
         }
