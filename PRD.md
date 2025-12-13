@@ -892,7 +892,7 @@ Top 5 Opportunities:
   - End-to-end validation: PEG → Connectors → Artifacts → Transform → Analysis → Report
   - All 3 data sources successfully integrated
 
-**Phase 3: Platform Demo Console** 🔄 IN PROGRESS (~60% Complete)
+**Phase 3: Platform Demo Console** 🔄 IN PROGRESS (~70% Complete)
 - [x] **UI Foundation & Infrastructure** (Phase 3.1-3.4)
   - React 18 + TypeScript + Vite project initialized
   - Tailwind CSS v4, React Router, Zustand, React Flow, Monaco Editor, Recharts
@@ -926,10 +926,13 @@ Top 5 Opportunities:
   - Aggregation by operation type
   - Frontend AggregatedServiceCall component
   - Real-time updates
-- [ ] **System Overview Tab** - Placeholder (Priority 1)
-  - Architecture diagram
-  - Service health status
-  - System statistics
+- [x] **System Overview Tab** ✅ COMPLETE (Phase 3.7)
+  - Real-time health checks for all 9 services (HTTP, PostgreSQL, Redis)
+  - Parallel async health checks using tokio::join! and futures::join_all
+  - Architecture diagram with color-coded status indicators
+  - Service health cards with detailed information
+  - System statistics from peg-engine
+  - Real-time polling every 10 seconds
 - [ ] **Artifacts Tab** - Placeholder (Priority 1)
   - File browser
   - JSON preview

@@ -1,9 +1,10 @@
 # Phase 3: Platform Demo Console UI - Handoff Document
 
 **Date:** 2025-12-13
-**Current Phase:** Phase 3 - Build Platform Demo Console UI (~60% Complete)
+**Current Phase:** Phase 3 - Build Platform Demo Console UI (~70% Complete)
 **Repository:** `/Users/jg/labs-nichefinder`
 **Branch:** `main` (all changes committed and pushed)
+**Latest Commit:** `d595a94` - "feat: Complete System Overview tab with real service health checks"
 
 ---
 
@@ -118,15 +119,46 @@
 
 **Key Achievement:** Complete end-to-end ecosystem flow visible in UI without overwhelming the page!
 
+### Phase 3.7: System Overview Tab ✅ COMPLETE
+- **Backend (Rust + Axum):**
+  - Implemented real service health checks for all 9 services
+  - Parallel async health checks using `tokio::join!()` and `futures::future::join_all()`
+  - HTTP health checks for: nichefinder-server, peg-engine, credential-vault, PEG-Connector-Service, ChromaDB
+  - PostgreSQL connection checks for 2 instances (ports 5436, 5433)
+  - Redis connection checks for 2 instances (ports 5379, 6380)
+  - Response times, timestamps, and detailed error messages
+  - Real system statistics fetched from peg-engine via HTTP
+  - Counts workflows, executions, artifacts, and opportunities
+- **Frontend (React + TypeScript):**
+  - Created `ArchitectureDiagram` component with visual representation of 13 services
+  - Color-coded status indicators (green = healthy, yellow = unhealthy, red = down)
+  - Created `ServiceHealthCard` component with detailed health information
+  - Created `SystemStats` component for system-wide statistics
+  - Real-time polling every 10 seconds
+  - Manual refresh button
+  - Responsive layout with Tailwind CSS
+- **Bug Fixes:**
+  - Fixed `start-full-stack.sh` script to use absolute paths for logs and PID files
+  - Added `PROJECT_ROOT` variable to handle directory changes correctly
+  - Reverted uncommitted changes in PEG-Connector-Service that caused compilation errors
+
+**Key Achievement:** Complete transparency into system architecture and service health!
+
 ---
 
-## � Current Status: Phase 3 ~60% Complete
+## � Current Status: Phase 3 ~70% Complete
 
 ### What's Working Now (✅ COMPLETE)
 ✅ **Full infrastructure startup** - All 6 services start with `./start-demo.sh`
 ✅ **Backend API** - 10+ endpoints serving data
-✅ **Frontend UI** - React app with 5 tabs (2 fully implemented, 3 placeholders)
-✅ **Results tab** - Displays 50 opportunities from database with scoring
+✅ **Frontend UI** - React app with 5 tabs (3 fully implemented, 2 placeholders)
+✅ **System Overview tab** - FULLY FEATURED:
+  - Real-time health checks for all 9 services
+  - Architecture diagram with color-coded status indicators
+  - Service health cards with response times and error messages
+  - System statistics (workflows, executions, artifacts, opportunities)
+  - Real-time polling every 10 seconds
+  - Manual refresh button
 ✅ **Workflow Execution tab** - FULLY FEATURED:
   - Auto-display of latest execution
   - Execution details (ID, status, timestamps, artifacts)
@@ -135,12 +167,12 @@
   - Expand/collapse for details
   - Real-time polling during execution
   - Complete end-to-end ecosystem visibility (9 interactions shown)
+✅ **Results tab** - Displays 50 opportunities from database with scoring
 ✅ **End-to-end flow** - peg-engine → credential-vault → PEG-Connector-Service (PROVEN in UI)
 
 ### What's Next (🚧 Remaining Work)
 
-**Priority 1: Essential for Demo (3-4 days)**
-- 🚧 **System Overview tab** - Architecture diagram, service health status, system stats
+**Priority 1: Essential for Demo (1-2 days)**
 - 🚧 **Artifacts tab** - File browser, JSON preview, download links
 
 **Priority 2: Nice to Have (2-3 days)**
@@ -149,39 +181,37 @@
 
 ---
 
-## 🎯 Next Immediate Task: System Overview Tab
+## 🎯 Next Immediate Task: Artifacts Tab
 
 ### Purpose
-Show the complete architecture and prove all 6 services are running and healthy.
+Show the raw data collected from connectors and allow inspection of artifacts.
 
 ### What to Build
-1. **Architecture Diagram**
-   - Visual representation of the 6-service architecture
-   - Show data flow: APIs → Connectors → PEG → UDM → Analysis → Results
-   - Interactive (click to highlight service)
+1. **Artifact Browser**
+   - List all artifacts with metadata (name, size, timestamp, source)
+   - Filter by source (HACS, GitHub, YouTube)
+   - Sort by date, size, name
 
-2. **Service Health Status**
-   - Real-time health checks for all 6 services
-   - Status indicators (green = healthy, red = down, yellow = degraded)
-   - Response time metrics
-   - Last check timestamp
+2. **Artifact Preview**
+   - JSON viewer with syntax highlighting (Monaco Editor)
+   - Collapsible tree view for large JSON files
+   - Search within artifact content
 
-3. **System Statistics**
-   - Total executions
-   - Total opportunities analyzed
-   - Total artifacts stored
-   - Uptime
+3. **Download Functionality**
+   - Download individual artifacts
+   - Download all artifacts as ZIP
 
 ### Implementation Plan
 **Backend:**
-- Extend `/api/system/status` endpoint to check all 6 services
-- Add `/api/system/stats` endpoint for statistics
+- Extend `/api/artifacts` endpoint to return file metadata
+- Add `/api/artifacts/{id}/download` endpoint for file downloads
+- Add `/api/artifacts/{id}/content` endpoint for preview
 
 **Frontend:**
-- Create `ArchitectureDiagram` component (can use React Flow or static SVG)
-- Create `ServiceHealthCard` component
-- Create `SystemStats` component
-- Integrate into `SystemOverview` page
+- Create `ArtifactBrowser` component (table with filters)
+- Create `ArtifactPreview` component (Monaco Editor)
+- Create `ArtifactDownload` component
+- Integrate into `Artifacts` page
 
 **Timeline:** 1-2 days
 
@@ -323,13 +353,13 @@ indicating strong user interest and reliable maintenance.
 
 | Tab | Purpose | Status | Completion |
 |-----|---------|--------|------------|
-| 🏗️ **System Overview** | Show architecture & health | ❌ Placeholder | 0% |
+| 🏗️ **System Overview** | Show architecture & health | ✅ **COMPLETE** | 100% |
 | ⚡ **Workflow Execution** | Trigger & monitor workflows | ✅ **COMPLETE** | 100% |
 | 🔄 **Data Pipeline** | Show transformations | ❌ Placeholder | 0% |
 | 📊 **Results** | Display opportunities | ✅ **COMPLETE** | 100% |
 | 📦 **Artifacts** | Browse raw data | ❌ Placeholder | 0% |
 
-**Overall Phase 3 Progress: ~60% (2 of 5 tabs complete, plus full backend API)**
+**Overall Phase 3 Progress: ~70% (3 of 5 tabs complete, plus full backend API)**
 
 ---
 
@@ -339,15 +369,15 @@ The UI tells this story:
 
 | Step | Tab | Status | Notes |
 |------|-----|--------|-------|
-| 1. "Here's our architecture" | System Overview | ❌ Placeholder | Need to build |
+| 1. "Here's our architecture" | System Overview | ✅ **COMPLETE** | Fully demonstrable with real-time health checks |
 | 2. "Let's execute a workflow" | Workflow Execution | ✅ **COMPLETE** | Fully demonstrable with service call traces |
 | 3. "Here's the data we collected" | Artifacts | ❌ Placeholder | Need to build |
 | 4. "Here's how we transform it" | Data Pipeline | ❌ Placeholder | Can explain verbally using traces |
 | 5. "Here are the results" | Results | ✅ **COMPLETE** | Fully demonstrable with 50 opportunities |
 
-**Current Demo Capability:** Steps 2 and 5 are fully demonstrable. Steps 1, 3, 4 require implementation.
+**Current Demo Capability:** Steps 1, 2, and 5 are fully demonstrable. Steps 3 and 4 require implementation.
 
-**Minimum Viable Demo:** Build System Overview + Artifacts tabs (Steps 1 & 3) to complete core narrative.
+**Minimum Viable Demo:** Build Artifacts tab (Step 3) to complete core narrative. Data Pipeline (Step 4) is optional.
 
 ---
 
@@ -592,7 +622,7 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
 **Branch:** main
 **Latest Commit:** [Check git log for latest]
 
-**Phase 3 Progress: ~60% Complete (2 of 5 tabs fully implemented)**
+**Phase 3 Progress: ~70% Complete (3 of 5 tabs fully implemented)**
 
 **What's Working:**
 ✅ **Phase 1:** PEG Connectors (HACS, GitHub, YouTube) - COMPLETE
@@ -600,9 +630,18 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
 ✅ **Phase 3.1-3.4:** UI Foundation & Results Tab - COMPLETE
 ✅ **Phase 3.5:** Service Call Trace - COMPLETE
 ✅ **Phase 3.6:** Aggregated Service Call Viewer - COMPLETE
+✅ **Phase 3.7:** System Overview Tab - COMPLETE
 
 **Fully Implemented Tabs:**
-1. ✅ **Workflow Execution** - FULLY FEATURED:
+1. ✅ **System Overview** - FULLY FEATURED:
+   - Real-time health checks for all 9 services
+   - Architecture diagram with color-coded status indicators
+   - Service health cards with response times and error messages
+   - System statistics (workflows, executions, artifacts, opportunities)
+   - Real-time polling every 10 seconds
+   - Manual refresh button
+
+2. ✅ **Workflow Execution** - FULLY FEATURED:
    - Auto-display of latest execution
    - Execution details (ID, status, timestamps, artifacts)
    - Service Call Trace with peg-engine traces (grouped by step)
@@ -611,16 +650,15 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
    - Real-time polling during execution
    - Shows complete end-to-end ecosystem flow (9 interactions)
 
-2. ✅ **Results** - FULLY FEATURED:
+3. ✅ **Results** - FULLY FEATURED:
    - Displays 50 opportunities from database
    - Scoring breakdown
    - Source attribution (HACS, GitHub, YouTube)
    - Sortable table
 
 **Placeholder Tabs (Need Implementation):**
-- ❌ System Overview (architecture diagram, service health)
-- ❌ Artifacts (file browser, JSON preview)
-- ❌ Data Pipeline (raw → normalized → analyzed transformation)
+- ❌ Artifacts (file browser, JSON preview) - NEXT PRIORITY
+- ❌ Data Pipeline (raw → normalized → analyzed transformation) - OPTIONAL
 
 **Services Running:**
 1. Infrastructure (Docker): PostgreSQL, Redis, ChromaDB
@@ -636,28 +674,29 @@ cd /Users/jg/labs-nichefinder
 ./start-demo.sh  # Starts all 6 services + infrastructure
 ```
 
-## 🎯 Next Task: System Overview Tab
+## 🎯 Next Task: Artifacts Tab
 
-**Goal:** Show the complete architecture and prove all 6 services are running and healthy.
+**Goal:** Show the raw data collected from connectors and allow inspection of artifacts.
 
 **What to Build:**
-1. **Architecture Diagram** - Visual representation of 6-service architecture
-2. **Service Health Status** - Real-time health checks with status indicators
-3. **System Statistics** - Total executions, opportunities, artifacts, uptime
+1. **Artifact Browser** - List all artifacts with metadata (name, size, timestamp, source)
+2. **Artifact Preview** - JSON viewer with syntax highlighting (Monaco Editor)
+3. **Download Functionality** - Download individual artifacts or all as ZIP
 
 **Why This Matters:**
-- Completes Step 1 of the demo narrative ("Here's our architecture")
-- Proves all services are running (no shortcuts)
-- Essential for compelling demo
+- Completes Step 3 of the demo narrative ("Here's the data we collected")
+- Proves data collection from all 3 connectors (HACS, GitHub, YouTube)
+- Essential for minimum viable demo
 
 **Implementation:**
-- Backend: Extend `/api/system/status` and `/api/system/stats` endpoints
-- Frontend: Create ArchitectureDiagram, ServiceHealthCard, SystemStats components
-- Integrate into SystemOverview page
+- Backend: Extend `/api/artifacts` endpoint, add download and content endpoints
+- Frontend: Create ArtifactBrowser, ArtifactPreview, ArtifactDownload components
+- Integrate into Artifacts page
 
 **Timeline:** 1-2 days
 
-**After This:** Build Artifacts tab to complete minimum viable demo (Steps 1, 2, 3, 5 of narrative)
+**After This:** Minimum viable demo is complete! (Steps 1, 2, 3, 5 of narrative)
+Data Pipeline tab (Step 4) is optional for polish.
 
 ## 📚 Key Documents to Review
 
@@ -707,12 +746,11 @@ Please help me implement the System Overview tab. This is the next priority to c
 - `PHASE_3_HANDOFF.md` - This document (current status)
 
 **Estimated Remaining Work:**
-- System Overview tab: 1-2 days
-- Artifacts tab: 1-2 days
+- Artifacts tab: 1-2 days (NEXT PRIORITY)
 - Data Pipeline tab: 2 days (optional)
 - Polish & Testing: 1 day
 
-**Total to MVP Demo:** 3-4 days (System Overview + Artifacts)
-**Total to Full Phase 3:** 5-6 days (all tabs + polish)
+**Total to MVP Demo:** 1-2 days (Artifacts tab only!)
+**Total to Full Phase 3:** 3-4 days (all tabs + polish)
 
 
