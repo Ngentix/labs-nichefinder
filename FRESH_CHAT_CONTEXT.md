@@ -6,14 +6,14 @@ I'm working on the **NicheFinder Platform Demo Console**, a technical showcase d
 
 **Repository:** https://github.com/Ngentix/labs-nichefinder
 **Branch:** `main`
-**Latest Commit:** `d1dc655` - "docs: Update Phase 3 status to ~70% complete with System Overview tab"
-**Previous Commit:** `d595a94` - "feat: Complete System Overview tab with real service health checks"
+**Latest Commit:** `012ef3f` - "fix: Pass environment=prod in workflow execution context and fix API key authentication"
+**Previous Commit:** `a777686` - "feat: Add Execute Workflow button with real workflow fetching and credential setup"
 
 ---
 
 ## 📊 Current Status
 
-**Phase 3: Platform Demo Console UI - ~70% Complete (3 of 5 tabs)**
+**Phase 3: Platform Demo Console UI - ~75% Complete (3 of 5 tabs)**
 
 ### ✅ What's Working Now:
 
@@ -25,12 +25,15 @@ I'm working on the **NicheFinder Platform Demo Console**, a technical showcase d
    - System statistics (workflows, executions, artifacts, opportunities)
    - Real-time polling every 10 seconds
 
-2. **⚡ Workflow Execution** - COMPLETE
+2. **⚡ Workflow Execution** - COMPLETE ✨ **NEW: Execute Workflow Button!**
+   - **Execute Workflow button** - Trigger new workflow executions from UI
+   - **Workflow selector** - Choose from real workflows fetched from peg-engine
    - Auto-display of latest execution
    - Service Call Trace with peg-engine traces
    - Aggregated service calls
    - Real-time polling during execution
    - Complete end-to-end ecosystem visibility
+   - **FULLY WORKING** - All 3 workflow steps (HACS, GitHub, YouTube) complete successfully
 
 3. **📊 Results** - COMPLETE
    - Displays 50 opportunities from database
@@ -159,9 +162,13 @@ open http://localhost:5173
 - Service Call Trace should capture ALL cross-service HTTP calls
 
 **Recent Fixes:**
-- Fixed `start-full-stack.sh` script to use absolute paths for logs and PID files
-- Reverted uncommitted changes in PEG-Connector-Service that caused compilation errors
-- Implemented real-time health checks for all 9 services
+- ✅ **Execute Workflow button** - Implemented workflow execution from UI with real workflow fetching
+- ✅ **Credential system** - Fixed environment context (was missing `environment: "prod"`)
+- ✅ **API key authentication** - Fixed PEG-Connector-Service to respect `api_key_config` from YAML
+  - GitHub: Now sends `Authorization: Bearer {token}` (was missing "Bearer" prefix)
+  - YouTube: Now sends `?key={api_key}` query param (was incorrectly using header)
+  - Added `User-Agent` header to all requests (required by GitHub API)
+- ✅ **All workflow steps working** - HACS, GitHub, and YouTube connectors all complete successfully
 
 ---
 

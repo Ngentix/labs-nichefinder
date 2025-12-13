@@ -146,7 +146,7 @@
 
 ---
 
-## � Current Status: Phase 3 ~70% Complete
+## � Current Status: Phase 3 ~75% Complete
 
 ### What's Working Now (✅ COMPLETE)
 ✅ **Full infrastructure startup** - All 6 services start with `./start-demo.sh`
@@ -159,7 +159,9 @@
   - System statistics (workflows, executions, artifacts, opportunities)
   - Real-time polling every 10 seconds
   - Manual refresh button
-✅ **Workflow Execution tab** - FULLY FEATURED:
+✅ **Workflow Execution tab** - FULLY FEATURED ✨ **NEW: Execute Workflow Button!**
+  - **Execute Workflow button** - Trigger new workflow executions from UI
+  - **Workflow selector** - Choose from real workflows fetched from peg-engine
   - Auto-display of latest execution
   - Execution details (ID, status, timestamps, artifacts)
   - Service Call Trace with peg-engine traces (grouped by step)
@@ -167,8 +169,13 @@
   - Expand/collapse for details
   - Real-time polling during execution
   - Complete end-to-end ecosystem visibility (9 interactions shown)
+  - **FULLY WORKING** - All 3 workflow steps (HACS, GitHub, YouTube) complete successfully
 ✅ **Results tab** - Displays 50 opportunities from database with scoring
 ✅ **End-to-end flow** - peg-engine → credential-vault → PEG-Connector-Service (PROVEN in UI)
+✅ **Credential system** - Fixed environment context and API key authentication
+  - GitHub: Sends `Authorization: Bearer {token}` with User-Agent header
+  - YouTube: Sends `?key={api_key}` query parameter
+  - All connectors working end-to-end
 
 ### What's Next (🚧 Remaining Work)
 
@@ -622,7 +629,7 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
 **Branch:** main
 **Latest Commit:** [Check git log for latest]
 
-**Phase 3 Progress: ~70% Complete (3 of 5 tabs fully implemented)**
+**Phase 3 Progress: ~75% Complete (3 of 5 tabs fully implemented)**
 
 **What's Working:**
 ✅ **Phase 1:** PEG Connectors (HACS, GitHub, YouTube) - COMPLETE
@@ -631,6 +638,7 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
 ✅ **Phase 3.5:** Service Call Trace - COMPLETE
 ✅ **Phase 3.6:** Aggregated Service Call Viewer - COMPLETE
 ✅ **Phase 3.7:** System Overview Tab - COMPLETE
+✅ **Phase 3.8:** Execute Workflow Button - COMPLETE
 
 **Fully Implemented Tabs:**
 1. ✅ **System Overview** - FULLY FEATURED:
@@ -641,7 +649,9 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
    - Real-time polling every 10 seconds
    - Manual refresh button
 
-2. ✅ **Workflow Execution** - FULLY FEATURED:
+2. ✅ **Workflow Execution** - FULLY FEATURED ✨ **NEW: Execute Workflow Button!**
+   - **Execute Workflow button** - Trigger new workflow executions from UI
+   - **Workflow selector** - Choose from real workflows fetched from peg-engine
    - Auto-display of latest execution
    - Execution details (ID, status, timestamps, artifacts)
    - Service Call Trace with peg-engine traces (grouped by step)
@@ -649,6 +659,7 @@ I'm continuing work on the NicheFinder Platform Demo Console. Please review the 
    - Expand/collapse for details
    - Real-time polling during execution
    - Shows complete end-to-end ecosystem flow (9 interactions)
+   - **FULLY WORKING** - All 3 workflow steps (HACS, GitHub, YouTube) complete successfully
 
 3. ✅ **Results** - FULLY FEATURED:
    - Displays 50 opportunities from database
