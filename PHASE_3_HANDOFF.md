@@ -509,4 +509,110 @@ cargo run -p nichefinder-core --bin nichefinder-analyze -- --max-results 20
 
 **Good luck!** 🎉
 
+---
+
+---
+
+# 📋 HANDOFF PROMPT FOR NEXT CHAT WINDOW
+
+**Copy and paste this section into your next chat to continue work:**
+
+---
+
+I'm continuing work on the NicheFinder Platform Demo Console. Please review the current status and help me with the next phase.
+
+## 📍 Current Status
+
+**Repository:** https://github.com/Ngentix/labs-nichefinder
+**Branch:** main
+**Latest Commit:** 75f44e6 - "docs: Update status and add future data source enhancements"
+
+**What's Working:**
+✅ Phase 1: PEG Connectors (HACS, GitHub, YouTube) - COMPLETE
+✅ Phase 2: UDM Normalization & Data Analysis - COMPLETE
+✅ Phase 3.1-3.4: UI Foundation & Results Tab - COMPLETE
+  - Frontend running on http://localhost:5173
+  - Backend API running on http://localhost:3001
+  - 50 opportunities displayed in Results tab
+  - All 3 data sources showing (HACS, GitHub, YouTube (general))
+
+**Services Running:**
+1. Infrastructure (Docker): PostgreSQL, Redis, ChromaDB
+2. credential-vault (port 3005) - AWS KMS encryption
+3. peg-engine (port 3007) - Workflow orchestration
+4. PEG-Connector-Service (port 9004) - Connector runtime
+5. nichefinder-server (port 3001) - REST API
+6. Frontend UI (port 5173) - React interface
+
+**Quick Start:**
+```bash
+cd /Users/jg/labs-nichefinder
+./start-demo.sh  # Starts all 6 services + infrastructure
+```
+
+## 🎯 Next Task: Phase 3.5 - Service Call Trace
+
+**Goal:** PROVE the end-to-end integration by showing actual API calls between services in the UI.
+
+**What to Build:**
+1. Backend: Add HTTP logging middleware to peg-engine
+2. Backend: Create execution_traces PostgreSQL table
+3. Backend: Implement `/executions/:id/trace` API endpoint
+4. Frontend: Create TraceEntry component
+5. Frontend: Create ServiceCallTrace panel for Workflow Execution tab
+6. Frontend: Implement real-time polling for trace updates
+
+**What This Proves:**
+✅ peg-engine → credential-vault (credential retrieval)
+✅ credential-vault → AWS KMS (decryption)
+✅ peg-engine → PEG-Connector-Service (connector execution)
+✅ PEG-Connector-Service → External APIs (GitHub, HACS, YouTube)
+✅ NO shortcuts or workarounds!
+
+**Detailed Specification:** See `FEATURE_SERVICE_CALL_TRACE.md`
+
+**Timeline:** 1-2 days
+
+## 📚 Key Documents to Review
+
+**MUST READ (in order):**
+1. `STATUS_SUMMARY.md` - Current status and progress
+2. `FEATURE_SERVICE_CALL_TRACE.md` - Detailed specification for Phase 3.5
+3. `PHASE_3_HANDOFF.md` - Complete Phase 3 context
+4. `UI_STRATEGY.md` - Overall UI vision
+
+**Future Enhancements (Post-Phase 3):**
+- `FEATURE_OPPORTUNITY_DESCRIPTIONS.md` - AI-generated descriptions (Ollama/OpenAI)
+- `FEATURE_ADDITIONAL_DATA_SOURCES.md` - Google Trends, HackerNews, Reddit, HA Community
+
+## 🔧 Technical Context
+
+**Frontend Stack:**
+- React 18 + TypeScript + Vite
+- Tailwind CSS v4
+- React Router, Zustand, React Flow, Monaco Editor, Recharts
+
+**Backend Stack:**
+- Rust + Axum (nichefinder-server)
+- PostgreSQL (peg-engine, credential-vault)
+- SQLite (nichefinder-server)
+
+**Critical Principle:**
+- This is a Platform Demo Console, NOT a business dashboard
+- Show the internals, don't hide them
+- Transparency over simplicity
+- ALWAYS use the full end-to-end system (NO shortcuts or workarounds)
+
+## ✅ Success Criteria for Phase 3.5
+
+1. ✅ Every HTTP call during workflow execution is captured
+2. ✅ Traces are visible in the UI in real-time
+3. ✅ Request/response details are available on expand
+4. ✅ Clearly shows: peg-engine → credential-vault → PEG-Connector-Service flow
+5. ✅ Proves NO shortcuts or workarounds are being used
+
+## 🚀 Ready to Start
+
+Please help me implement Phase 3.5: Service Call Trace. Start by reviewing `FEATURE_SERVICE_CALL_TRACE.md` and let me know your implementation plan.
+
 
