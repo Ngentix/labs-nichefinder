@@ -19,6 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<SystemOverview />} />
             <Route path="/workflow" element={<WorkflowExecution />} />
+            <Route path="/workflow/:id" element={<WorkflowExecution />} />
             <Route path="/pipeline" element={<DataPipeline />} />
             <Route path="/results" element={<Results />} />
             <Route path="/artifacts" element={<Artifacts />} />

@@ -371,7 +371,7 @@ async fn get_execution_trace(
     let peg_engine_url = std::env::var("PEG_ENGINE_URL")
         .unwrap_or_else(|_| "http://localhost:3007".to_string());
 
-    let url = format!("{}/api/executions/{}/trace", peg_engine_url, id);
+    let url = format!("{}/api/v1/executions/{}/trace", peg_engine_url, id);
 
     // Make request to peg-engine
     let client = reqwest::Client::new();
